@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import bcrypt from "bcryptjs";
-import { Role } from "@prisma/client";
+import { Role, TaskStatus } from "@prisma/client";
 
 export const createUser = async (userData: any) => {
   const { name, email, password, role } = userData;
@@ -131,11 +131,11 @@ export const getSystemStats = async () => {
   const totalTasks = await prisma.task.count();
   
   const completedTasks = await prisma.task.count({
-    where: { status: "COMPLETED" },
+    where: { status: "DONE" },
   });
   
   const pendingTasks = await prisma.task.count({
-    where: { status: "PENDING" },
+    where: { status: { in: ["TODO", "IN_PROGRESS"] } },
   });
 
   return {
@@ -161,9 +161,14 @@ export const getAllProjects = async () => {
       members: {
         select: {
           id: true,
-          name: true,
-          email: true,
-          role: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
         },
       },
       tasks: {

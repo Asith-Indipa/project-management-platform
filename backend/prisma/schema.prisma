@@ -12,6 +12,25 @@ enum Role {
   TEAM_MEMBER
 }
 
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
@@ -22,36 +41,60 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  managedProjects Project[] @relation("ProjectManager")
-  assignedTasks   Task[]    @relation("AssignedTasks")
-  projects        Project[] @relation("ProjectMembers")
+  managedProjects Project[]       @relation("ProjectManager")
+  projectMembers  ProjectMember[]
+  assignedTasks   Task[]          @relation("AssignedTasks")
 }
 
 model Project {
-  id          Int      @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   name        String
   description String?
+  status      ProjectStatus   @default(PLANNING)
+
+  startDate   DateTime?
+  endDate     DateTime?
 
   managerId   Int
   manager     User @relation("ProjectManager", fields: [managerId], references: [id])
 
-  members     User[] @relation("ProjectMembers")
+  members     ProjectMember[]
   tasks       Task[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model Task {
-  id          Int      @id @default(autoincrement())
-  title       String
-  status      String   @default("PENDING") // PENDING or COMPLETED
+model ProjectMember {
+  id        Int @id @default(autoincrement())
 
-  projectId   Int
-  project     Project @relation(fields: [projectId], references: [id])
+  projectId Int
+  userId    Int
+
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+}
+
+model Task {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  progress     Int          @default(0)
+
+  dueDate      DateTime?
+
+  projectId    Int
+  project      Project @relation(fields: [projectId], references: [id])
 
   assignedToId Int
-  assignedTo User @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  assignedTo   User @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
