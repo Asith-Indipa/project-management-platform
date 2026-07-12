@@ -6,6 +6,7 @@ import projectRoutes from "./routes/project.routes";
 import taskRoutes from "./routes/task.routes";
 import teamMemberRoutes from "./routes/teamMember.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
+import extraRoutes from "./routes/extra.routes";
 import { authMiddleware } from "./middleware/auth.middleware";
 import * as taskController from "./controllers/task.controller";
 
@@ -24,6 +25,7 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/team-member", teamMemberRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api", extraRoutes);
 app.get("/api/my-tasks", authMiddleware, taskController.getMyTasks);
 
 export default app;

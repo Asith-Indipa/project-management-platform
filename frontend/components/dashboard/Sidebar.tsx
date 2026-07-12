@@ -43,16 +43,15 @@ export default function Sidebar({ onClose }: SidebarProps) {
           { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
           { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
           { name: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-          { name: "Team", href: "/dashboard/team", icon: Users },
-          { name: "Reports", href: "/dashboard/reports", icon: FileText },
+          { name: "Settings", href: "/dashboard/settings", icon: Settings },
         ];
       case "TEAM_MEMBER":
-        default:
+      default:
         return [
           { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-          { name: "My Projects", href: "/dashboard/projects", icon: Briefcase },
-          { name: "My Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-          { name: "Profile", href: "/dashboard/profile", icon: UserIcon },
+          { name: "My Projects", href: "/dashboard/my-projects", icon: Briefcase },
+          { name: "My Tasks", href: "/dashboard/my-tasks", icon: CheckSquare },
+          { name: "Settings", href: "/dashboard/settings", icon: Settings },
         ];
     }
   };

@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { Role, TaskStatus, TaskPriority } from "@prisma/client";
+import { logActivity, sendNotification } from "./extra.service";
 
 export const createTask = async (taskData: any, currentUserId: number, currentUserRole: Role) => {
   const { title, description, priority, projectId, assignedToId, dueDate } = taskData;
@@ -33,7 +34,7 @@ export const createTask = async (taskData: any, currentUserId: number, currentUs
     throw new Error("User must be a member of the project before tasks can be assigned to them.");
   }
 
-  return prisma.task.create({
+  const task = await prisma.task.create({
     data: {
       title,
       description,
@@ -54,6 +55,13 @@ export const createTask = async (taskData: any, currentUserId: number, currentUs
       },
     },
   });
+
+  await logActivity(`created Task "${title}" in Project "${project.name}"`, currentUserId, projectId);
+  if (assignedToId) {
+    await sendNotification(`Task "${title}" in Project "${project.name}" has been assigned to you.`, assignedToId);
+  }
+
+  return task;
 };
 
 export const getProjectTasks = async (projectId: number, currentUserId: number, currentUserRole: Role) => {
@@ -130,7 +138,7 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
     }
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: {
       title: title || undefined,
@@ -151,6 +159,14 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
       },
     },
   });
+
+  await logActivity(`updated Task "${updatedTask.title}"`, currentUserId, updatedTask.projectId);
+
+  if (assignedToId && assignedToId !== task.assignedToId) {
+    await sendNotification(`Task "${updatedTask.title}" has been assigned to you.`, assignedToId);
+  }
+
+  return updatedTask;
 };
 
 export const deleteTask = async (taskId: number, currentUserId: number, currentUserRole: Role) => {
@@ -207,7 +223,7 @@ export const assignTask = async (taskId: number, assignedToId: number, currentUs
     throw new Error("User must be a member of the project before tasks can be assigned to them.");
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: { assignedToId },
     include: {
@@ -221,6 +237,11 @@ export const assignTask = async (taskId: number, assignedToId: number, currentUs
       },
     },
   });
+
+  await logActivity(`assigned Task "${task.title}" to ${updatedTask.assignedTo?.name}`, currentUserId, task.projectId);
+  await sendNotification(`Task "${task.title}" has been assigned to you.`, assignedToId);
+
+  return updatedTask;
 };
 
 export const updateTaskStatus = async (taskId: number, status: TaskStatus, currentUserId: number, currentUserRole: Role) => {
@@ -259,13 +280,17 @@ export const updateTaskStatus = async (taskId: number, status: TaskStatus, curre
     }
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: {
       status,
       progress,
     },
   });
+
+  await logActivity(`updated Task "${task.title}" status to ${status}`, currentUserId, task.projectId);
+
+  return updatedTask;
 };
 
 export const getMyTasks = async (userId: number) => {

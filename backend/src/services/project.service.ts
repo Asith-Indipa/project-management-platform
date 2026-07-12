@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { Role } from "@prisma/client";
+import { logActivity, sendNotification } from "./extra.service";
 
 export const createProject = async (projectData: any) => {
   const { name, description, managerId, startDate, endDate, status } = projectData;
@@ -17,7 +18,7 @@ export const createProject = async (projectData: any) => {
     throw new Error("Manager user must have ADMIN or PROJECT_MANAGER role");
   }
 
-  return prisma.project.create({
+  const project = await prisma.project.create({
     data: {
       name,
       description,
@@ -37,6 +38,11 @@ export const createProject = async (projectData: any) => {
       },
     },
   });
+
+  await logActivity(`created Project "${name}"`, managerId, project.id);
+  await sendNotification(`You have been assigned as the manager for Project "${name}"`, managerId);
+
+  return project;
 };
 
 export const getAllProjects = async (userId: number, userRole: Role) => {
@@ -182,7 +188,7 @@ export const updateProject = async (id: number, userId: number, userRole: Role, 
     }
   }
 
-  return prisma.project.update({
+  const updatedProject = await prisma.project.update({
     where: { id },
     data: {
       name: name || undefined,
@@ -203,6 +209,18 @@ export const updateProject = async (id: number, userId: number, userRole: Role, 
       },
     },
   });
+
+  await logActivity(`updated Project "${updatedProject.name}"`, userId, id);
+
+  if (status === "COMPLETED") {
+    // Notify all project members
+    const members = await prisma.projectMember.findMany({ where: { projectId: id } });
+    for (const m of members) {
+      await sendNotification(`Project "${updatedProject.name}" has been completed!`, m.userId);
+    }
+  }
+
+  return updatedProject;
 };
 
 export const deleteProject = async (id: number, userId: number, userRole: Role) => {
@@ -273,7 +291,7 @@ export const assignMember = async (projectId: number, userId: number, currentUse
     throw new Error("User is already a member of this project");
   }
 
-  return prisma.projectMember.create({
+  const member = await prisma.projectMember.create({
     data: {
       projectId,
       userId,
@@ -289,6 +307,11 @@ export const assignMember = async (projectId: number, userId: number, currentUse
       },
     },
   });
+
+  await logActivity(`assigned user ${member.user.name} to Project "${project.name}"`, currentUserId, projectId);
+  await sendNotification(`You have been assigned to Project "${project.name}"`, userId);
+
+  return member;
 };
 
 export const removeMember = async (projectId: number, userId: number, currentUserId: number, currentUserRole: Role) => {
@@ -327,6 +350,13 @@ export const removeMember = async (projectId: number, userId: number, currentUse
       },
     },
   });
+
+  // Get user details for logging
+  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  const targetName = targetUser?.name || `User #${userId}`;
+
+  await logActivity(`removed user ${targetName} from Project "${project.name}"`, currentUserId, projectId);
+  await sendNotification(`You have been removed from Project "${project.name}"`, userId);
 
   return { message: "Member removed from project successfully" };
 };

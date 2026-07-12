@@ -41,24 +41,13 @@ export default function UserProfileDropdown() {
           </div>
           
           <Link
-            href="/dashboard/profile"
+            href="/dashboard/settings"
             onClick={() => setIsOpen(false)}
             className="flex w-full items-center rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
           >
-            <UserIcon className="mr-2 h-4 w-4 text-zinc-500" />
-            My Profile
+            <Settings className="mr-2 h-4 w-4 text-zinc-500" />
+            My Profile & Settings
           </Link>
-          
-          {user.role === "ADMIN" && (
-            <Link
-              href="/dashboard/settings"
-              onClick={() => setIsOpen(false)}
-              className="flex w-full items-center rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <Settings className="mr-2 h-4 w-4 text-zinc-500" />
-              Settings
-            </Link>
-          )}
 
           <button
             onClick={() => {

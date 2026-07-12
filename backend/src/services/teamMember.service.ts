@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { TaskStatus } from "@prisma/client";
+import { logActivity } from "./extra.service";
 
 export const getMyProjects = async (userId: number) => {
   return prisma.project.findMany({
@@ -70,13 +71,17 @@ export const updateTaskProgress = async (id: number, userId: number, progress: n
     status = TaskStatus.DONE;
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id },
     data: {
       progress,
       status,
     },
   });
+
+  await logActivity(`calibrated Task "${task.title}" progress to ${progress}%`, userId, task.projectId);
+
+  return updatedTask;
 };
 
 export const updateTaskStatus = async (id: number, userId: number, status: TaskStatus) => {
@@ -104,11 +109,15 @@ export const updateTaskStatus = async (id: number, userId: number, status: TaskS
     }
   }
 
-  return prisma.task.update({
+  const updatedTask = await prisma.task.update({
     where: { id },
     data: {
       status,
       progress,
     },
   });
+
+  await logActivity(`calibrated Task "${task.title}" status to ${status}`, userId, task.projectId);
+
+  return updatedTask;
 };
