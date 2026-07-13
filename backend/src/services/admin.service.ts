@@ -87,13 +87,23 @@ export const updateUser = async (id: number, updateData: any) => {
   });
 };
 
-export const deleteUser = async (id: number) => {
+export const deleteUser = async (id: number, requesterId: number) => {
   const user = await prisma.user.findUnique({
     where: { id },
   });
 
   if (!user) {
     throw new Error("User not found");
+  }
+
+  // 1. Prevent self-deletion
+  if (user.id === requesterId) {
+    throw new Error("Self-deletion is not permitted. You cannot delete your own account.");
+  }
+
+  // 2. Prevent deleting other Admins
+  if (user.role === Role.ADMIN) {
+    throw new Error("Access denied. Admin accounts cannot be deleted.");
   }
 
   await prisma.user.delete({

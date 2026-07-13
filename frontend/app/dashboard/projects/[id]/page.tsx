@@ -79,6 +79,8 @@ export default function ProjectDetailsPage({
   const [activeTab, setActiveTab] = useState<"tasks" | "members">("tasks");
   const [isAssignMemberOpen, setIsAssignMemberOpen] = useState(false);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [isDeleteMemberOpen, setIsDeleteMemberOpen] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<ProjectMember | null>(null);
 
   // Member Form state
   const [globalUsers, setGlobalUsers] = useState<any[]>([]);
@@ -153,16 +155,24 @@ export default function ProjectDetailsPage({
     }
   };
 
-  const handleRemoveMember = async (userId: number) => {
-    if (!confirm("Are you sure you want to remove this member from the project?")) return;
+  const openDeleteMemberModal = (member: ProjectMember) => {
+    setMemberToRemove(member);
+    setIsDeleteMemberOpen(true);
+  };
+
+  const handleRemoveMember = async () => {
+    if (!memberToRemove) return;
     setError(null);
     setSuccess(null);
     try {
-      await api.delete(`/projects/${projectId}/members/${userId}`);
+      await api.delete(`/projects/${projectId}/members/${memberToRemove.userId}`);
       setSuccess("Member removed from project.");
+      setIsDeleteMemberOpen(false);
+      setMemberToRemove(null);
       fetchProjectDetails();
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to remove member.");
+      setIsDeleteMemberOpen(false);
     }
   };
 
@@ -402,7 +412,11 @@ export default function ProjectDetailsPage({
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {project.tasks.map((task) => (
-                <div key={task.id} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <Link
+                  key={task.id}
+                  href={`/dashboard/tasks/${task.id}`}
+                  className="block rounded-xl border border-zinc-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-indigo-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 transition-all cursor-pointer"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{task.title}</h3>
@@ -424,7 +438,7 @@ export default function ProjectDetailsPage({
                       <span>Assignee: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{task.assignedTo?.name || "Unassigned"}</span></span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -464,7 +478,7 @@ export default function ProjectDetailsPage({
                       {canManage && (
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           <button
-                            onClick={() => handleRemoveMember(member.userId)}
+                            onClick={() => openDeleteMemberModal(member)}
                             className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -590,6 +604,8 @@ export default function ProjectDetailsPage({
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
                   <input
                     type="date"
+                    min={project?.startDate ? new Date(project.startDate).toISOString().split("T")[0] : undefined}
+                    max={project?.endDate ? new Date(project.endDate).toISOString().split("T")[0] : undefined}
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
                     className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
@@ -633,6 +649,89 @@ export default function ProjectDetailsPage({
           </div>
         </div>
       )}
+
+      {/* REMOVE MEMBER CONFIRMATION MODAL */}
+      {isDeleteMemberOpen && memberToRemove && (() => {
+        const assignedTasks = project?.tasks.filter((t) => t.assignedTo?.id === memberToRemove.userId) || [];
+        const hasAssignedTasks = assignedTasks.length > 0;
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteMemberOpen(false)} />
+            <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
+              {hasAssignedTasks ? (
+                <>
+                  <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-3">
+                    <AlertCircle className="h-6 w-6" />
+                    <h2 className="text-lg font-bold">Unassign Tasks First</h2>
+                  </div>
+                  <p className="text-sm text-zinc-650 dark:text-zinc-400 mb-4">
+                    Before removing <span className="font-semibold text-zinc-900 dark:text-zinc-50">{memberToRemove.user.name}</span>, you must unassign them from the following tasks in this project:
+                  </p>
+                  
+                  <div className="space-y-2.5 max-h-48 overflow-y-auto mb-6 pr-1">
+                    {assignedTasks.map((task) => (
+                      <div key={task.id} className="flex items-center justify-between p-3 rounded-lg border border-zinc-150 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/40 text-xs">
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px]">{task.title}</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              try {
+                                await api.put(`/tasks/${task.id}`, { assignedToId: null });
+                                fetchProjectDetails();
+                              } catch (err: any) {
+                                alert("Failed to unassign: " + (err.response?.data?.error || err.message));
+                              }
+                            }}
+                            className="rounded bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/80 dark:text-indigo-400 transition-all"
+                          >
+                            Unassign
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteMemberOpen(false)}
+                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 text-red-650 dark:text-red-400 mb-3">
+                    <AlertCircle className="h-6 w-6" />
+                    <h2 className="text-lg font-bold">Remove Member</h2>
+                  </div>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
+                    Are you sure you want to remove <span className="font-semibold text-zinc-900 dark:text-zinc-50">{memberToRemove.user.name}</span> from the project? This action cannot be undone.
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsDeleteMemberOpen(false)}
+                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleRemoveMember}
+                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+                    >
+                      Yes, Remove
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -19,19 +19,31 @@ export const createTask = async (taskData: any, currentUserId: number, currentUs
     throw new Error("Access denied. You do not have permission to create tasks for this project.");
   }
 
-  // Verify that the assigned user exists
-  const assignee = await prisma.user.findUnique({
-    where: { id: assignedToId },
-  });
+  if (assignedToId) {
+    // Verify that the assigned user exists
+    const assignee = await prisma.user.findUnique({
+      where: { id: assignedToId },
+    });
 
-  if (!assignee) {
-    throw new Error("Assignee user not found");
+    if (!assignee) {
+      throw new Error("Assignee user not found");
+    }
+
+    // Check if assignee is a member of the project
+    const isMember = project.members.some((m) => m.userId === assignedToId);
+    if (!isMember && assignee.role !== Role.ADMIN && project.managerId !== assignedToId) {
+      throw new Error("User must be a member of the project before tasks can be assigned to them.");
+    }
   }
 
-  // Check if assignee is a member of the project
-  const isMember = project.members.some((m) => m.userId === assignedToId);
-  if (!isMember && assignee.role !== Role.ADMIN && project.managerId !== assignedToId) {
-    throw new Error("User must be a member of the project before tasks can be assigned to them.");
+  if (dueDate) {
+    const taskDueDate = new Date(dueDate);
+    if (project.startDate && taskDueDate < new Date(project.startDate)) {
+      throw new Error(`Task due date cannot be before project start date (${project.startDate.toISOString().split('T')[0]})`);
+    }
+    if (project.endDate && taskDueDate > new Date(project.endDate)) {
+      throw new Error(`Task due date cannot be after project end date (${project.endDate.toISOString().split('T')[0]})`);
+    }
   }
 
   const task = await prisma.task.create({
@@ -138,6 +150,16 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
     }
   }
 
+  if (dueDate) {
+    const taskDueDate = new Date(dueDate);
+    if (task.project.startDate && taskDueDate < new Date(task.project.startDate)) {
+      throw new Error(`Task due date cannot be before project start date (${task.project.startDate.toISOString().split('T')[0]})`);
+    }
+    if (task.project.endDate && taskDueDate > new Date(task.project.endDate)) {
+      throw new Error(`Task due date cannot be after project end date (${task.project.endDate.toISOString().split('T')[0]})`);
+    }
+  }
+
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: {
@@ -145,7 +167,7 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
       description: description !== undefined ? description : undefined,
       priority: priority || undefined,
       status: status || undefined,
-      assignedToId: assignedToId || undefined,
+      assignedToId: assignedToId !== undefined ? assignedToId : undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
     },
     include: {

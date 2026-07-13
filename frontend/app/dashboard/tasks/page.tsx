@@ -176,7 +176,9 @@ export default function TasksPage() {
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (task.projectName && task.projectName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (task.assignedTo?.name && task.assignedTo.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === "ALL" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "ALL" || task.priority === priorityFilter;

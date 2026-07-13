@@ -7,7 +7,7 @@ export const createTaskSchema = z.object({
     message: "Priority must be LOW, MEDIUM, or HIGH",
   }).optional(),
   projectId: z.number({ message: "Project ID must be a number" }),
-  assignedToId: z.number({ message: "Assigned User ID must be a number" }),
+  assignedToId: z.number().optional().nullable(),
   dueDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional().nullable(),
 });
 
@@ -20,7 +20,7 @@ export const updateTaskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"], {
     message: "Status must be TODO, IN_PROGRESS, or DONE",
   }).optional(),
-  assignedToId: z.number().optional(),
+  assignedToId: z.number().optional().nullable(),
   dueDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional().nullable(),
 });
 

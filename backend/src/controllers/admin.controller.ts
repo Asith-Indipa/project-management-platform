@@ -82,7 +82,13 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const result = await adminService.deleteUser(id);
+    const requesterId = (req as any).user?.userId;
+    if (!requesterId) {
+      res.status(401).json({ success: false, error: "Unauthorized" });
+      return;
+    }
+
+    const result = await adminService.deleteUser(id, requesterId);
     res.status(200).json({
       success: true,
       ...result,

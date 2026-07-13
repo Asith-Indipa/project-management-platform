@@ -47,6 +47,7 @@ export default function TaskDetailsPage({
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -78,6 +79,7 @@ export default function TaskDetailsPage({
             ...t,
             projectName: proj.name,
           };
+          setSelectedProject(proj);
           // Map project members
           membersList = proj.members || [];
           break;
@@ -161,7 +163,7 @@ export default function TaskDetailsPage({
       }
 
       setSuccess("Task updated successfully!");
-      fetchTaskDetails();
+      router.push("/dashboard/tasks");
     } catch (err: any) {
       const errData = err.response?.data;
       if (errData?.errors) {
@@ -303,6 +305,8 @@ export default function TaskDetailsPage({
               <input
                 type="date"
                 disabled={!canManage}
+                min={selectedProject?.startDate ? new Date(selectedProject.startDate).toISOString().split("T")[0] : undefined}
+                max={selectedProject?.endDate ? new Date(selectedProject.endDate).toISOString().split("T")[0] : undefined}
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"

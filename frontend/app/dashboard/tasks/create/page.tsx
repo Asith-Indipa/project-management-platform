@@ -10,6 +10,8 @@ import Link from "next/link";
 interface ProjectOption {
   id: number;
   name: string;
+  startDate: string | null;
+  endDate: string | null;
   members: {
     userId: number;
     user: {
@@ -206,6 +208,8 @@ export default function CreateTaskPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
                 <input
                   type="date"
+                  min={selectedProject?.startDate ? new Date(selectedProject.startDate).toISOString().split("T")[0] : undefined}
+                  max={selectedProject?.endDate ? new Date(selectedProject.endDate).toISOString().split("T")[0] : undefined}
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"

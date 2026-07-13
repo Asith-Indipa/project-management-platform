@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 interface User {
   id: number;
@@ -25,6 +26,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -182,12 +184,6 @@ export default function UsersPage() {
             >
               <Plus className="h-4 w-4" /> Add User
             </button>
-            <Link
-              href="/dashboard/users/create"
-              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              <UserPlus className="h-4 w-4" /> Form Page
-            </Link>
           </div>
         </div>
 
@@ -290,12 +286,14 @@ export default function UsersPage() {
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
-                      <button
-                        onClick={() => openDeleteModal(user)}
-                        className="inline-flex items-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {user.role !== "ADMIN" && user.id !== currentUser?.id && (
+                        <button
+                          onClick={() => openDeleteModal(user)}
+                          className="inline-flex items-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
