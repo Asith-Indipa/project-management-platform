@@ -1,0 +1,206 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
+
+export default function LoginPage() {
+  const { login, user } = useAuth();
+  const router = useRouter();
+
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
+  // Input states
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"ADMIN" | "PROJECT_MANAGER" | "TEAM_MEMBER">("TEAM_MEMBER");
+
+  useEffect(() => {
+    // If user is already logged in, redirect to dashboard
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setFieldErrors({});
+
+    try {
+      if (isLogin) {
+        // Sign In Request
+        const response = await api.post("/auth/login", { email, password });
+        const { token, user: loggedUser } = response.data;
+        login(token, loggedUser);
+      } else {
+        // Sign Up Request
+        const response = await api.post("/auth/register", {
+          name,
+          email,
+          password,
+          role,
+        });
+        // On successful registration, auto-login or switch to login
+        const loginResponse = await api.post("/auth/login", { email, password });
+        const { token, user: loggedUser } = loginResponse.data;
+        login(token, loggedUser);
+      }
+    } catch (err: any) {
+      const errData = err.response?.data;
+      if (errData?.errors) {
+        setFieldErrors(errData.errors);
+      } else if (errData?.error) {
+        setError(errData.error);
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-4 py-12 dark:from-zinc-950 dark:via-purple-950 dark:to-zinc-900">
+      <div className="w-full max-w-md rounded-2xl bg-white/90 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-900/90 dark:border dark:border-zinc-800">
+        <div className="flex flex-col items-center mb-8">
+          <h2 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-pink-400">
+            WorkSync
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Project & Team Task Management
+          </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="flex rounded-lg bg-zinc-100 p-1 mb-6 dark:bg-zinc-800">
+          <button
+            onClick={() => {
+              setIsLogin(true);
+              setError(null);
+              setFieldErrors({});
+            }}
+            className={`flex-1 rounded-md py-2 text-sm font-semibold transition-all ${
+              isLogin
+                ? "bg-white text-indigo-600 shadow-sm dark:bg-zinc-700 dark:text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => {
+              setIsLogin(false);
+              setError(null);
+              setFieldErrors({});
+            }}
+            className={`flex-1 rounded-md py-2 text-sm font-semibold transition-all ${
+              !isLogin
+                ? "bg-white text-indigo-600 shadow-sm dark:bg-zinc-700 dark:text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+            }`}
+          >
+            Register
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/50 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              />
+              {fieldErrors.name && (
+                <p className="mt-1 text-xs text-red-500">{fieldErrors.name[0]}</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+            />
+            {fieldErrors.email && (
+              <p className="mt-1 text-xs text-red-500">{fieldErrors.email[0]}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+            />
+            {fieldErrors.password && (
+              <p className="mt-1 text-xs text-red-500">{fieldErrors.password[0]}</p>
+            )}
+          </div>
+          {!isLogin && (
+            <SelectDropdown
+              label="Select Your Role"
+              value={role}
+              onChange={(val) => setRole(val as any)}
+              options={[
+                { value: "TEAM_MEMBER", label: "Team Member (Developer/QA)" },
+                { value: "PROJECT_MANAGER", label: "Project Manager (PM)" },
+                { value: "ADMIN", label: "System Administrator" }
+              ]}
+              error={fieldErrors.role}
+            />
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-sm font-semibold text-white shadow-md transition-all hover:opacity-95 disabled:opacity-50 dark:from-indigo-500 dark:to-pink-500"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                Processing...
+              </span>
+            ) : isLogin ? (
+              "Sign In"
+            ) : (
+              "Register Account"
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
