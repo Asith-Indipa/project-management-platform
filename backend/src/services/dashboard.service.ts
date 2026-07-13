@@ -18,6 +18,9 @@ export const getAdminStats = async () => {
   const activeProjects = await prisma.project.count({
     where: { status: ProjectStatus.ACTIVE },
   });
+  const completedProjects = await prisma.project.count({
+    where: { status: ProjectStatus.COMPLETED },
+  });
 
   return {
     totalUsers,
@@ -26,6 +29,7 @@ export const getAdminStats = async () => {
     completedTasks,
     pendingTasks,
     activeProjects,
+    completedProjects,
   };
 };
 

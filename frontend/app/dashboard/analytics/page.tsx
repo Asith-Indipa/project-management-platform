@@ -113,7 +113,11 @@ export default function AnalyticsPage() {
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight">{stats.totalProjects}</span>
-              <span className="text-xs text-blue-500 font-medium">{stats.activeProjects} Active</span>
+              <div className="flex items-center gap-1.5 text-xs font-semibold">
+                <span className="text-blue-500">{stats.activeProjects} Active</span>
+                <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                <span className="text-green-500">{stats.completedProjects || 0} Completed</span>
+              </div>
             </div>
           </div>
 

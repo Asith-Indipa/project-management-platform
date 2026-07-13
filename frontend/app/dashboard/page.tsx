@@ -156,9 +156,11 @@ export default function DashboardPage() {
                   <Briefcase className="h-6 w-6 text-purple-500" />
                 </div>
                 <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalProjects}</p>
-                <p className="mt-1 text-xs text-green-600 dark:text-green-400 font-medium">
-                  {stats.activeProjects} active projects
-                </p>
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold">
+                  <span className="text-blue-500">{stats.activeProjects} Active</span>
+                  <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                  <span className="text-green-500">{stats.completedProjects || 0} Completed</span>
+                </div>
               </div>
               <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="flex items-center justify-between">
