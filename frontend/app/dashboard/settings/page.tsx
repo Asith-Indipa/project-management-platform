@@ -2,28 +2,48 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 import {
   User,
   Shield,
   Mail,
   Sun,
   Moon,
-  Laptop,
   CheckCircle,
+  Lock,
+  Save,
+  Loader2,
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState(false);
 
-  // Initialize theme from document element class
+  // Profile fields state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+
+  // Initialize theme from document element class and user fields
   useEffect(() => {
     if (typeof window !== "undefined") {
       const isDark = document.documentElement.classList.contains("dark");
       setDarkMode(isDark);
     }
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
   const handleThemeToggle = (theme: "light" | "dark") => {
     const html = document.documentElement;
@@ -38,6 +58,74 @@ export default function SettingsPage() {
     }
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
+  };
+
+  const validateForm = () => {
+    const errors: Record<string, string[]> = {};
+
+    if (!name.trim()) {
+      errors.name = ["Name is required"];
+    } else if (name.length > 50) {
+      errors.name = ["Name must be at most 50 characters"];
+    }
+
+    if (!email.trim()) {
+      errors.email = ["Email is required"];
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.email = ["Invalid email address"];
+      }
+    }
+
+    if (password && password.length < 6) {
+      errors.password = ["Password must be at least 6 characters"];
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setFieldErrors({});
+    setProfileSuccess(false);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const response = await api.put("/auth/profile", {
+        name,
+        email,
+        password: password || undefined,
+      });
+
+      if (response.data.success) {
+        updateUser(response.data.user);
+        setProfileSuccess(true);
+        setPassword(""); // Clear password field
+        setTimeout(() => setProfileSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      const errData = err.response?.data;
+      if (errData?.errors) {
+        setFieldErrors(errData.errors);
+      } else if (errData?.error) {
+        if (errData.error === "Email address already in use") {
+          setFieldErrors({ email: ["Email address already in use"] });
+        } else {
+          setError(errData.error);
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (
@@ -56,31 +144,89 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {profileSuccess && (
+        <div className="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700 dark:bg-green-950/20 dark:text-green-400 flex items-center gap-2">
+          <CheckCircle className="h-4 w-4" /> Profile details updated successfully.
+        </div>
+      )}
+
       {/* Profile Card */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4 flex items-center gap-2">
           <User className="h-5 w-5 text-indigo-500" /> Account Profile
         </h2>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-lg dark:bg-zinc-950 dark:border-zinc-800">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-              <User className="h-5 w-5" />
+        <form onSubmit={handleProfileUpdate} noValidate className="space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/50 dark:text-red-400">
+              {error}
             </div>
-            <div>
-              <span className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Full Name</span>
-              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{user?.name || "N/A"}</span>
+          )}
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              Full Name
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                <User className="h-4 w-4" />
+              </span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              />
             </div>
+            {fieldErrors.name && (
+              <p className="mt-1 text-xs text-red-500">{fieldErrors.name[0]}</p>
+            )}
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-lg dark:bg-zinc-950 dark:border-zinc-800">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-              <Mail className="h-5 w-5" />
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              Email Address
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                <Mail className="h-4 w-4" />
+              </span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              />
             </div>
-            <div>
-              <span className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Email Address</span>
-              <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{user?.email || "N/A"}</span>
+            {fieldErrors.email && (
+              <p className="mt-1 text-xs text-red-500">{fieldErrors.email[0]}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              New Password (Optional)
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                <Lock className="h-4 w-4" />
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              />
             </div>
+            <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+              Leave blank to keep current password. If updating, must be at least 6 characters.
+            </p>
+            {fieldErrors.password && (
+              <p className="mt-1 text-xs text-red-500">{fieldErrors.password[0]}</p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-lg dark:bg-zinc-950 dark:border-zinc-800">
@@ -94,7 +240,27 @@ export default function SettingsPage() {
               </span>
             </div>
           </div>
-        </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={updating}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:pointer-events-none dark:from-indigo-500 dark:to-purple-500"
+            >
+              {updating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving Changes...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  <span>Update Profile Details</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Appearance Settings */}
@@ -112,7 +278,7 @@ export default function SettingsPage() {
             onClick={() => handleThemeToggle("light")}
             className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
               !darkMode
-                ? "border-indigo-600 bg-indigo-50/20 text-indigo-650 dark:border-indigo-500"
+                ? "border-indigo-650 bg-indigo-50/20 text-indigo-650 dark:border-indigo-500"
                 : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
             }`}
           >
@@ -125,7 +291,7 @@ export default function SettingsPage() {
             onClick={() => handleThemeToggle("dark")}
             className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
               darkMode
-                ? "border-indigo-600 bg-indigo-50/20 text-indigo-400 dark:border-indigo-500"
+                ? "border-indigo-650 bg-indigo-50/20 text-indigo-400 dark:border-indigo-500"
                 : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
             }`}
           >

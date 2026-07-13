@@ -85,7 +85,7 @@ export function SelectDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 z-50 animate-in fade-in slide-in-from-top-1 duration-100">
+          <div className="absolute left-0 mt-1 w-full max-h-48 overflow-y-auto overflow-x-hidden rounded-lg border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 z-[60] animate-in fade-in slide-in-from-top-1 duration-100 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
             {placeholder && (
               <button
                 type="button"

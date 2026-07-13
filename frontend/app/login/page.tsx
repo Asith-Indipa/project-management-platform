@@ -19,7 +19,6 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "PROJECT_MANAGER" | "TEAM_MEMBER">("TEAM_MEMBER");
 
   useEffect(() => {
     // If user is already logged in, redirect to dashboard
@@ -28,12 +27,46 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
+  const validateForm = () => {
+    const errors: Record<string, string[]> = {};
+    
+    if (!isLogin) {
+      if (!name.trim()) {
+        errors.name = ["Name is required"];
+      } else if (name.length > 50) {
+        errors.name = ["Name must be at most 50 characters"];
+      }
+    }
+    
+    if (!email.trim()) {
+      errors.email = ["Email is required"];
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errors.email = ["Invalid email address"];
+      }
+    }
+    
+    if (!password) {
+      errors.password = ["Password is required"];
+    } else if (!isLogin && password.length < 6) {
+      errors.password = ["Password must be at least 6 characters"];
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setFieldErrors({});
 
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
     try {
       if (isLogin) {
         // Sign In Request
@@ -46,7 +79,6 @@ export default function LoginPage() {
           name,
           email,
           password,
-          role,
         });
         // On successful registration, auto-login or switch to login
         const loginResponse = await api.post("/auth/login", { email, password });
@@ -58,7 +90,11 @@ export default function LoginPage() {
       if (errData?.errors) {
         setFieldErrors(errData.errors);
       } else if (errData?.error) {
-        setError(errData.error);
+        if (errData.error === "User already exists") {
+          setFieldErrors({ email: ["User already exists"] });
+        } else {
+          setError(errData.error);
+        }
       } else {
         setError("An unexpected error occurred. Please try again.");
       }
@@ -117,7 +153,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {!isLogin && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
@@ -125,7 +161,6 @@ export default function LoginPage() {
               </label>
               <input
                 type="text"
-                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
@@ -143,7 +178,6 @@ export default function LoginPage() {
             </label>
             <input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -160,29 +194,20 @@ export default function LoginPage() {
             </label>
             <input
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
             />
+            {!isLogin && !fieldErrors.password && (
+              <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                Password must be at least 6 characters long.
+              </p>
+            )}
             {fieldErrors.password && (
               <p className="mt-1 text-xs text-red-500">{fieldErrors.password[0]}</p>
             )}
           </div>
-          {!isLogin && (
-            <SelectDropdown
-              label="Select Your Role"
-              value={role}
-              onChange={(val) => setRole(val as any)}
-              options={[
-                { value: "TEAM_MEMBER", label: "Team Member (Developer/QA)" },
-                { value: "PROJECT_MANAGER", label: "Project Manager (PM)" },
-                { value: "ADMIN", label: "System Administrator" }
-              ]}
-              error={fieldErrors.role}
-            />
-          )}
           <button
             type="submit"
             disabled={loading}
