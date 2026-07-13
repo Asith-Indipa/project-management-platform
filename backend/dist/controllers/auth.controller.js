@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.profile = exports.login = exports.register = void 0;
+exports.updateProfile = exports.profile = exports.login = exports.register = void 0;
 const authService = __importStar(require("../services/auth.service"));
 const auth_validation_1 = require("../validations/auth.validation");
 const register = async (req, res) => {
@@ -86,3 +86,25 @@ const profile = async (req, res) => {
     }
 };
 exports.profile = profile;
+const updateProfile = async (req, res) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ success: false, error: "Unauthorized" });
+            return;
+        }
+        const parseResult = auth_validation_1.updateProfileSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            res.status(400).json({
+                success: false,
+                errors: parseResult.error.flatten().fieldErrors,
+            });
+            return;
+        }
+        const result = await authService.updateUserProfile(req.user.userId, req.body);
+        res.status(200).json(result);
+    }
+    catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+exports.updateProfile = updateProfile;

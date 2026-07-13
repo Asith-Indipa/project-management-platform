@@ -61,9 +61,13 @@ const createTask = async (taskData, currentUserId, currentUserRole) => {
             },
         },
     });
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
     await (0, extra_service_1.logActivity)(`created Task "${title}" in Project "${project.name}"`, currentUserId, projectId);
     if (assignedToId) {
-        await (0, extra_service_1.sendNotification)(`Task "${title}" in Project "${project.name}" has been assigned to you.`, assignedToId);
+        if (assignedToId !== currentUserId) {
+            await (0, extra_service_1.sendNotification)(`Task "${title}" in Project "${project.name}" has been assigned to you by ${actorText}.`, assignedToId);
+        }
     }
     return task;
 };
@@ -115,7 +119,43 @@ const updateTask = async (taskId, updateData, currentUserId, currentUserRole) =>
     if (currentUserRole !== client_1.Role.ADMIN && task.project.managerId !== currentUserId) {
         throw new Error("Access denied. You do not have permission to manage this task.");
     }
-    const { title, description, priority, status, assignedToId, dueDate } = updateData;
+    const { title, description, priority, status, progress, assignedToId, dueDate } = updateData;
+    // Sync status and progress
+    let finalStatus = status || task.status;
+    let finalProgress = progress !== undefined ? progress : task.progress;
+    if (status !== undefined && progress === undefined) {
+        if (status === client_1.TaskStatus.TODO) {
+            finalProgress = 0;
+        }
+        else if (status === client_1.TaskStatus.DONE) {
+            finalProgress = 100;
+        }
+        else if (status === client_1.TaskStatus.IN_PROGRESS && (task.progress === 0 || task.progress === 100)) {
+            finalProgress = 50;
+        }
+    }
+    else if (progress !== undefined && status === undefined) {
+        if (progress === 0) {
+            finalStatus = client_1.TaskStatus.TODO;
+        }
+        else if (progress === 100) {
+            finalStatus = client_1.TaskStatus.DONE;
+        }
+        else {
+            finalStatus = client_1.TaskStatus.IN_PROGRESS;
+        }
+    }
+    else if (status !== undefined && progress !== undefined) {
+        if (progress === 0) {
+            finalStatus = client_1.TaskStatus.TODO;
+        }
+        else if (progress === 100) {
+            finalStatus = client_1.TaskStatus.DONE;
+        }
+        else if (finalStatus === client_1.TaskStatus.TODO || finalStatus === client_1.TaskStatus.DONE) {
+            finalStatus = client_1.TaskStatus.IN_PROGRESS;
+        }
+    }
     // If changing assignee, verify new assignee is a member of the project
     if (assignedToId && assignedToId !== task.assignedToId) {
         const assignee = await prisma_1.prisma.user.findUnique({
@@ -147,7 +187,8 @@ const updateTask = async (taskId, updateData, currentUserId, currentUserRole) =>
             title: title || undefined,
             description: description !== undefined ? description : undefined,
             priority: priority || undefined,
-            status: status || undefined,
+            status: finalStatus,
+            progress: finalProgress,
             assignedToId: assignedToId !== undefined ? assignedToId : undefined,
             dueDate: dueDate ? new Date(dueDate) : undefined,
         },
@@ -162,9 +203,14 @@ const updateTask = async (taskId, updateData, currentUserId, currentUserRole) =>
             },
         },
     });
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(updatedTask.projectId);
     await (0, extra_service_1.logActivity)(`updated Task "${updatedTask.title}"`, currentUserId, updatedTask.projectId);
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
     if (assignedToId && assignedToId !== task.assignedToId) {
-        await (0, extra_service_1.sendNotification)(`Task "${updatedTask.title}" has been assigned to you.`, assignedToId);
+        if (assignedToId !== currentUserId) {
+            await (0, extra_service_1.sendNotification)(`Task "${updatedTask.title}" has been assigned to you by ${actorText}.`, assignedToId);
+        }
     }
     return updatedTask;
 };
@@ -186,6 +232,13 @@ const deleteTask = async (taskId, currentUserId, currentUserRole) => {
     await prisma_1.prisma.task.delete({
         where: { id: taskId },
     });
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(task.projectId);
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+    await (0, extra_service_1.logActivity)(`deleted Task "${task.title}" from Project "${task.project.name}"`, currentUserId, task.projectId);
+    if (task.assignedToId && task.assignedToId !== currentUserId) {
+        await (0, extra_service_1.sendNotification)(`Task "${task.title}" in Project "${task.project.name}" was deleted by ${actorText}.`, task.assignedToId);
+    }
     return { message: "Task deleted successfully" };
 };
 exports.deleteTask = deleteTask;
@@ -228,7 +281,11 @@ const assignTask = async (taskId, assignedToId, currentUserId, currentUserRole) 
         },
     });
     await (0, extra_service_1.logActivity)(`assigned Task "${task.title}" to ${updatedTask.assignedTo?.name}`, currentUserId, task.projectId);
-    await (0, extra_service_1.sendNotification)(`Task "${task.title}" has been assigned to you.`, assignedToId);
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+    if (assignedToId !== currentUserId) {
+        await (0, extra_service_1.sendNotification)(`Task "${task.title}" has been assigned to you by ${actorText}.`, assignedToId);
+    }
     return updatedTask;
 };
 exports.assignTask = assignTask;
@@ -275,6 +332,7 @@ const updateTaskStatus = async (taskId, status, currentUserId, currentUserRole) 
         },
     });
     await (0, extra_service_1.logActivity)(`updated Task "${task.title}" status to ${status}`, currentUserId, task.projectId);
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(task.projectId);
     return updatedTask;
 };
 exports.updateTaskStatus = updateTaskStatus;

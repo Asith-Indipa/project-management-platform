@@ -46,7 +46,7 @@ const createProject = async (req, res) => {
             });
             return;
         }
-        const result = await projectService.createProject(req.body);
+        const result = await projectService.createProject(req.body, req.user.userId);
         res.status(201).json({
             success: true,
             project: result,

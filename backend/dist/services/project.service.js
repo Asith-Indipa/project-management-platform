@@ -4,7 +4,7 @@ exports.getDashboardStats = exports.getProjectProgress = exports.removeMember = 
 const prisma_1 = require("../config/prisma");
 const client_1 = require("@prisma/client");
 const extra_service_1 = require("./extra.service");
-const createProject = async (projectData) => {
+const createProject = async (projectData, creatorId) => {
     const { name, description, managerId, startDate, endDate, status } = projectData;
     // Verify that the manager exists and is either an ADMIN or a PROJECT_MANAGER
     const manager = await prisma_1.prisma.user.findUnique({
@@ -36,8 +36,12 @@ const createProject = async (projectData) => {
             },
         },
     });
-    await (0, extra_service_1.logActivity)(`created Project "${name}"`, managerId, project.id);
-    await (0, extra_service_1.sendNotification)(`You have been assigned as the manager for Project "${name}"`, managerId);
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: creatorId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+    await (0, extra_service_1.logActivity)(`created Project "${name}"`, creatorId, project.id);
+    if (managerId !== creatorId) {
+        await (0, extra_service_1.sendNotification)(`You have been assigned as the manager for Project "${name}" by ${actorText}`, managerId);
+    }
     return project;
 };
 exports.createProject = createProject;
@@ -57,7 +61,7 @@ const getAllProjects = async (userId, userRole) => {
             },
         };
     }
-    return prisma_1.prisma.project.findMany({
+    const projects = await prisma_1.prisma.project.findMany({
         where: whereClause,
         include: {
             manager: {
@@ -94,9 +98,19 @@ const getAllProjects = async (userId, userRole) => {
             },
         },
     });
+    return projects.map((project) => {
+        const totalTasks = project.tasks.length;
+        const totalProgress = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+        const completionPercentage = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
+        return {
+            ...project,
+            completionPercentage,
+        };
+    });
 };
 exports.getAllProjects = getAllProjects;
 const getProjectById = async (id, userId, userRole) => {
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(id);
     const project = await prisma_1.prisma.project.findUnique({
         where: { id },
         include: {
@@ -147,7 +161,10 @@ const getProjectById = async (id, userId, userRole) => {
             throw new Error("Access denied. You are not a member of this project.");
         }
     }
-    return project;
+    return {
+        ...project,
+        completionPercentage: project.tasks.length > 0 ? Math.round(project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / project.tasks.length) : 0,
+    };
 };
 exports.getProjectById = getProjectById;
 const updateProject = async (id, userId, userRole, updateData) => {
@@ -174,6 +191,20 @@ const updateProject = async (id, userId, userRole, updateData) => {
             throw new Error("New manager must have ADMIN or PROJECT_MANAGER role");
         }
     }
+    if (status === "COMPLETED") {
+        const incompleteTasksCount = await prisma_1.prisma.task.count({
+            where: {
+                projectId: id,
+                OR: [
+                    { status: { not: "DONE" } },
+                    { progress: { lt: 100 } }
+                ]
+            }
+        });
+        if (incompleteTasksCount > 0) {
+            throw new Error("Cannot set project status to COMPLETED because some tasks are not 100% complete.");
+        }
+    }
     const updatedProject = await prisma_1.prisma.project.update({
         where: { id },
         data: {
@@ -197,8 +228,9 @@ const updateProject = async (id, userId, userRole, updateData) => {
     });
     await (0, extra_service_1.logActivity)(`updated Project "${updatedProject.name}"`, userId, id);
     if (status === "COMPLETED") {
-        // Notify all project members
+        // Notify all project members and the manager
         const members = await prisma_1.prisma.projectMember.findMany({ where: { projectId: id } });
+        await (0, extra_service_1.sendNotification)(`Project "${updatedProject.name}" has been completed!`, updatedProject.managerId);
         for (const m of members) {
             await (0, extra_service_1.sendNotification)(`Project "${updatedProject.name}" has been completed!`, m.userId);
         }
@@ -217,17 +249,21 @@ const deleteProject = async (id, userId, userRole) => {
     if (userRole !== client_1.Role.ADMIN && project.managerId !== userId) {
         throw new Error("Access denied. You do not have permission to delete this project.");
     }
-    // Delete all tasks associated with this project first (Prisma transaction / cascade delete)
-    await prisma_1.prisma.task.deleteMany({
-        where: { projectId: id },
-    });
-    // Delete all project member relations
-    await prisma_1.prisma.projectMember.deleteMany({
-        where: { projectId: id },
-    });
-    await prisma_1.prisma.project.delete({
-        where: { id },
-    });
+    // Delete all tasks, project member relations, activities, and the project within a transaction to maintain integrity
+    await prisma_1.prisma.$transaction([
+        prisma_1.prisma.task.deleteMany({
+            where: { projectId: id },
+        }),
+        prisma_1.prisma.projectMember.deleteMany({
+            where: { projectId: id },
+        }),
+        prisma_1.prisma.activity.deleteMany({
+            where: { projectId: id },
+        }),
+        prisma_1.prisma.project.delete({
+            where: { id },
+        }),
+    ]);
     return { message: "Project deleted successfully" };
 };
 exports.deleteProject = deleteProject;
@@ -277,8 +313,10 @@ const assignMember = async (projectId, userId, currentUserId, currentUserRole) =
             },
         },
     });
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
     await (0, extra_service_1.logActivity)(`assigned user ${member.user.name} to Project "${project.name}"`, currentUserId, projectId);
-    await (0, extra_service_1.sendNotification)(`You have been assigned to Project "${project.name}"`, userId);
+    await (0, extra_service_1.sendNotification)(`You have been assigned to Project "${project.name}" by ${actorText}`, userId);
     return member;
 };
 exports.assignMember = assignMember;
@@ -316,8 +354,10 @@ const removeMember = async (projectId, userId, currentUserId, currentUserRole) =
     // Get user details for logging
     const targetUser = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
     const targetName = targetUser?.name || `User #${userId}`;
+    const actor = await prisma_1.prisma.user.findUnique({ where: { id: currentUserId } });
+    const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
     await (0, extra_service_1.logActivity)(`removed user ${targetName} from Project "${project.name}"`, currentUserId, projectId);
-    await (0, extra_service_1.sendNotification)(`You have been removed from Project "${project.name}"`, userId);
+    await (0, extra_service_1.sendNotification)(`You have been removed from Project "${project.name}" by ${actorText}`, userId);
     return { message: "Member removed from project successfully" };
 };
 exports.removeMember = removeMember;
@@ -339,11 +379,13 @@ const getProjectProgress = async (projectId, userId, userRole) => {
             throw new Error("Access denied. You are not a member of this project.");
         }
     }
-    const totalTasks = await prisma_1.prisma.task.count({ where: { projectId } });
-    const completedTasks = await prisma_1.prisma.task.count({ where: { projectId, status: "DONE" } });
-    const inProgressTasks = await prisma_1.prisma.task.count({ where: { projectId, status: "IN_PROGRESS" } });
-    const todoTasks = await prisma_1.prisma.task.count({ where: { projectId, status: "TODO" } });
-    const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const tasks = await prisma_1.prisma.task.findMany({ where: { projectId } });
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((t) => t.status === "DONE").length;
+    const inProgressTasks = tasks.filter((t) => t.status === "IN_PROGRESS").length;
+    const todoTasks = tasks.filter((t) => t.status === "TODO").length;
+    const totalProgress = tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const completionPercentage = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
     return {
         projectId,
         totalTasks,

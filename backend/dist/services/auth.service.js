@@ -3,12 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserById = exports.loginUser = exports.registerUser = void 0;
+exports.updateUserProfile = exports.getUserById = exports.loginUser = exports.registerUser = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const generateToken_1 = require("../utils/generateToken");
 const registerUser = async (userData) => {
     const { name, email, password, role } = userData;
+    if (role === 'ADMIN') {
+        throw new Error('Public registration of System Administrator accounts is disabled for security reasons.');
+    }
     const existingUser = await client_1.default.user.findUnique({
         where: { email }
     });
@@ -21,7 +24,7 @@ const registerUser = async (userData) => {
             name,
             email,
             password: hashedPassword,
-            role: role || 'TEAM_MEMBER'
+            role: 'TEAM_MEMBER' // Always force TEAM_MEMBER on public registration
         }
     });
     const token = (0, generateToken_1.generateToken)(newUser.id, newUser.role);
@@ -81,3 +84,43 @@ const getUserById = async (userId) => {
     };
 };
 exports.getUserById = getUserById;
+const updateUserProfile = async (userId, updateData) => {
+    const { name, email, password } = updateData;
+    const user = await client_1.default.user.findUnique({
+        where: { id: userId }
+    });
+    if (!user) {
+        throw new Error("User not found");
+    }
+    const dataToUpdate = {};
+    if (name !== undefined) {
+        dataToUpdate.name = name;
+    }
+    if (email !== undefined && email !== user.email) {
+        const existingUser = await client_1.default.user.findUnique({
+            where: { email }
+        });
+        if (existingUser) {
+            throw new Error("Email address already in use");
+        }
+        dataToUpdate.email = email;
+    }
+    if (password && password.trim() !== "") {
+        dataToUpdate.password = await bcryptjs_1.default.hash(password, 10);
+    }
+    const updatedUser = await client_1.default.user.update({
+        where: { id: userId },
+        data: dataToUpdate,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+        }
+    });
+    return {
+        success: true,
+        user: updatedUser
+    };
+};
+exports.updateUserProfile = updateUserProfile;
