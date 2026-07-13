@@ -57,3 +57,12 @@ export const readNotification = async (req: AuthRequest, res: Response): Promise
     res.status(400).json({ success: false, error: error.message });
   }
 };
+
+export const getUsers = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const result = await extraService.getUsers();
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

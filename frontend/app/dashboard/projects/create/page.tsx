@@ -85,6 +85,8 @@ export default function CreateProjectPage() {
           return;
         }
         payload.managerId = parseInt(managerId, 10);
+      } else if (user) {
+        payload.managerId = user.id;
       }
 
       await api.post("/projects", payload);

@@ -15,4 +15,7 @@ router.get("/projects/:projectId/activities", extraController.getProjectActiviti
 router.get("/notifications", extraController.getNotifications);
 router.patch("/notifications/:id/read", extraController.readNotification);
 
+// Users List Route (accessible to any authenticated user, e.g. project manager)
+router.get("/users", extraController.getUsers);
+
 export default router;

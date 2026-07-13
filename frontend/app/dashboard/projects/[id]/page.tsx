@@ -141,10 +141,11 @@ export default function ProjectDetailsPage({
     fetchProjectDetails();
   }, [projectId]);
 
-  // Load global users if admin
+  // Load global users if admin or project manager
   useEffect(() => {
-    if (isAssignMemberOpen && currentUser?.role === "ADMIN") {
-      api.get("/admin/users")
+    if (isAssignMemberOpen) {
+      const url = currentUser?.role === "ADMIN" ? "/admin/users" : "/users";
+      api.get(url)
         .then((res) => {
           const list = Array.isArray(res.data) ? res.data : res.data.users || [];
           setGlobalUsers(list);
@@ -175,7 +176,7 @@ export default function ProjectDetailsPage({
     setError(null);
     setSuccess(null);
 
-    const targetId = currentUser?.role === "ADMIN" ? selectedUserId : manualUserId;
+    const targetId = selectedUserId;
 
     if (!targetId) {
       setError("Please specify a user to assign.");
@@ -620,33 +621,19 @@ export default function ProjectDetailsPage({
           <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Assign Project Member</h2>
             <form onSubmit={handleAssignMember} className="space-y-4">
-              {currentUser?.role === "ADMIN" ? (
-                <SelectDropdown
-                  label="Select Member"
-                  value={selectedUserId}
-                  onChange={setSelectedUserId}
-                  placeholder="Choose User"
-                  options={globalUsers
-                    .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
-                    .map((gu) => ({
-                      value: gu.id,
-                      label: `${gu.name} (${gu.role.replace("_", " ").toLowerCase()})`
-                    }))}
-                />
-              ) : (
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">User ID</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Enter team member ID..."
-                    value={manualUserId}
-                    onChange={(e) => setManualUserId(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  />
-                  <p className="mt-1.5 text-xs text-zinc-400">For security, please enter the unique identifier of the user to assign.</p>
-                </div>
-              )}
+              <SelectDropdown
+                label="Select Member"
+                value={selectedUserId}
+                onChange={setSelectedUserId}
+                placeholder="Choose User"
+                options={globalUsers
+                  .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
+                  .filter((gu) => currentUser?.role !== "PROJECT_MANAGER" || gu.role === "TEAM_MEMBER")
+                  .map((gu) => ({
+                    value: gu.id,
+                    label: `${gu.name} (${gu.role.replace("_", " ").toLowerCase()})`
+                  }))}
+              />
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
