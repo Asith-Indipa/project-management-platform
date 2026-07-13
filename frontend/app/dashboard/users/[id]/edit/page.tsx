@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import api from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 
 export default function EditUserPage({
   params,
@@ -122,18 +123,17 @@ export default function EditUserPage({
                 {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email[0]}</p>}
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Access Role</label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
-                >
-                  <option value="TEAM_MEMBER">Team Member</option>
-                  <option value="PROJECT_MANAGER">Project Manager</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
+              <SelectDropdown
+                label="Access Role"
+                value={role}
+                onChange={(val) => setRole(val as any)}
+                options={[
+                  { value: "TEAM_MEMBER", label: "Team Member" },
+                  { value: "PROJECT_MANAGER", label: "Project Manager" },
+                  { value: "ADMIN", label: "Admin" }
+                ]}
+                error={fieldErrors.role}
+              />
 
               <div className="flex justify-end gap-3 mt-6 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                 <Link

@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 
 interface ManagerOption {
   id: number;
@@ -151,7 +152,7 @@ export default function CreateProjectPage() {
               {fieldErrors.description && <p className="mt-1 text-xs text-red-500">{fieldErrors.description[0]}</p>}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Start Date</label>
                 <input
@@ -175,39 +176,37 @@ export default function CreateProjectPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Project Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <option value="PLANNING">Planning</option>
-                  <option value="ACTIVE">Active</option>
-                  <option value="ON_HOLD">On Hold</option>
-                  <option value="COMPLETED">Completed</option>
-                </select>
-              </div>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <SelectDropdown
+                label="Project Status"
+                value={status}
+                onChange={setStatus}
+                options={[
+                  { value: "PLANNING", label: "Planning" },
+                  { value: "ACTIVE", label: "Active" },
+                  { value: "ON_HOLD", label: "On Hold" },
+                  { value: "COMPLETED", label: "Completed" }
+                ]}
+              />
 
               {user?.role === "ADMIN" && (
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Project Manager</label>
                   {fetchingManagers ? (
-                    <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project Manager</label>
+                      <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                    </div>
                   ) : (
-                    <select
+                    <SelectDropdown
+                      label="Project Manager"
                       value={managerId}
-                      onChange={(e) => setManagerId(e.target.value)}
-                      className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                    >
-                      <option value="">Select Manager</option>
-                      {managers.map((manager) => (
-                        <option key={manager.id} value={manager.id}>
-                          {manager.name} ({manager.role})
-                        </option>
-                      ))}
-                    </select>
+                      onChange={setManagerId}
+                      placeholder="Select Manager"
+                      options={managers.map((manager) => ({
+                        value: manager.id,
+                        label: `${manager.name} (${manager.role.replace("_", " ").toLowerCase()})`
+                      }))}
+                    />
                   )}
                 </div>
               )}

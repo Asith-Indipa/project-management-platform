@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { Role, TaskStatus, TaskPriority } from "@prisma/client";
-import { logActivity, sendNotification } from "./extra.service";
+import { logActivity, sendNotification, checkAndUpdateProjectCompletion } from "./extra.service";
 
 export const createTask = async (taskData: any, currentUserId: number, currentUserRole: Role) => {
   const { title, description, priority, projectId, assignedToId, dueDate } = taskData;
@@ -130,7 +130,37 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
     throw new Error("Access denied. You do not have permission to manage this task.");
   }
 
-  const { title, description, priority, status, assignedToId, dueDate } = updateData;
+  const { title, description, priority, status, progress, assignedToId, dueDate } = updateData;
+
+  // Sync status and progress
+  let finalStatus = status || task.status;
+  let finalProgress = progress !== undefined ? progress : task.progress;
+
+  if (status !== undefined && progress === undefined) {
+    if (status === TaskStatus.TODO) {
+      finalProgress = 0;
+    } else if (status === TaskStatus.DONE) {
+      finalProgress = 100;
+    } else if (status === TaskStatus.IN_PROGRESS && (task.progress === 0 || task.progress === 100)) {
+      finalProgress = 50;
+    }
+  } else if (progress !== undefined && status === undefined) {
+    if (progress === 0) {
+      finalStatus = TaskStatus.TODO;
+    } else if (progress === 100) {
+      finalStatus = TaskStatus.DONE;
+    } else {
+      finalStatus = TaskStatus.IN_PROGRESS;
+    }
+  } else if (status !== undefined && progress !== undefined) {
+    if (progress === 0) {
+      finalStatus = TaskStatus.TODO;
+    } else if (progress === 100) {
+      finalStatus = TaskStatus.DONE;
+    } else if (finalStatus === TaskStatus.TODO || finalStatus === TaskStatus.DONE) {
+      finalStatus = TaskStatus.IN_PROGRESS;
+    }
+  }
 
   // If changing assignee, verify new assignee is a member of the project
   if (assignedToId && assignedToId !== task.assignedToId) {
@@ -166,7 +196,8 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
       title: title || undefined,
       description: description !== undefined ? description : undefined,
       priority: priority || undefined,
-      status: status || undefined,
+      status: finalStatus,
+      progress: finalProgress,
       assignedToId: assignedToId !== undefined ? assignedToId : undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
     },
@@ -181,6 +212,8 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
       },
     },
   });
+
+  await checkAndUpdateProjectCompletion(updatedTask.projectId);
 
   await logActivity(`updated Task "${updatedTask.title}"`, currentUserId, updatedTask.projectId);
 
@@ -211,6 +244,8 @@ export const deleteTask = async (taskId: number, currentUserId: number, currentU
   await prisma.task.delete({
     where: { id: taskId },
   });
+
+  await checkAndUpdateProjectCompletion(task.projectId);
 
   return { message: "Task deleted successfully" };
 };
@@ -311,6 +346,7 @@ export const updateTaskStatus = async (taskId: number, status: TaskStatus, curre
   });
 
   await logActivity(`updated Task "${task.title}" status to ${status}`, currentUserId, task.projectId);
+  await checkAndUpdateProjectCompletion(task.projectId);
 
   return updatedTask;
 };

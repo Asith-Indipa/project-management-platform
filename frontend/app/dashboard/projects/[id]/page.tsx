@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import {
   ArrowLeft,
   Calendar,
@@ -17,6 +18,7 @@ import {
   AlertCircle,
   UserPlus,
   Play,
+  Edit,
 } from "lucide-react";
 
 interface ProjectMember {
@@ -97,6 +99,32 @@ export default function ProjectDetailsPage({
   const [creatingTask, setCreatingTask] = useState(false);
   const [taskErrors, setTaskErrors] = useState<Record<string, string[]>>({});
 
+  // Edit Project state
+  const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editStatus, setEditStatus] = useState("PLANNING");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [editManagerId, setEditManagerId] = useState("");
+  const [updatingProject, setUpdatingProject] = useState(false);
+  const [editErrors, setEditErrors] = useState<Record<string, string[]>>({});
+  const [managers, setManagers] = useState<any[]>([]);
+  const [fetchingManagers, setFetchingManagers] = useState(false);
+  const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false);
+
+  const openEditProjectModal = () => {
+    if (!project) return;
+    setEditName(project.name);
+    setEditDescription(project.description || "");
+    setEditStatus(project.status);
+    setEditStartDate(project.startDate ? new Date(project.startDate).toISOString().split("T")[0] : "");
+    setEditEndDate(project.endDate ? new Date(project.endDate).toISOString().split("T")[0] : "");
+    setEditManagerId(project.manager?.id.toString() || "");
+    setEditErrors({});
+    setIsEditProjectOpen(true);
+  };
+
   const fetchProjectDetails = async () => {
     try {
       setLoading(true);
@@ -124,6 +152,22 @@ export default function ProjectDetailsPage({
         .catch(console.error);
     }
   }, [isAssignMemberOpen, currentUser]);
+
+  useEffect(() => {
+    if (isEditProjectOpen && currentUser?.role === "ADMIN") {
+      setFetchingManagers(true);
+      api.get("/admin/users")
+        .then((res) => {
+          const allUsers = Array.isArray(res.data) ? res.data : res.data.users || [];
+          const eligibleManagers = allUsers.filter(
+            (u: any) => u.role === "ADMIN" || u.role === "PROJECT_MANAGER"
+          );
+          setManagers(eligibleManagers);
+        })
+        .catch(console.error)
+        .finally(() => setFetchingManagers(false));
+    }
+  }, [isEditProjectOpen, currentUser]);
 
   const handleAssignMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,6 +265,68 @@ export default function ProjectDetailsPage({
     setTaskErrors({});
   };
 
+  const handleEditProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUpdatingProject(true);
+    setEditErrors({});
+    setError(null);
+    setSuccess(null);
+
+    if (editStartDate && editEndDate && new Date(editStartDate) > new Date(editEndDate)) {
+      setError("Start date cannot be after the end date.");
+      setUpdatingProject(false);
+      return;
+    }
+
+    try {
+      const payload: any = {
+        name: editName,
+        description: editDescription || null,
+        status: editStatus,
+        startDate: editStartDate || null,
+        endDate: editEndDate || null,
+      };
+
+      if (currentUser?.role === "ADMIN") {
+        if (!editManagerId) {
+          setError("Please select a project manager.");
+          setUpdatingProject(false);
+          return;
+        }
+        payload.managerId = parseInt(editManagerId, 10);
+      }
+
+      await api.put(`/projects/${projectId}`, payload);
+      setSuccess("Project updated successfully!");
+      setIsEditProjectOpen(false);
+      fetchProjectDetails();
+    } catch (err: any) {
+      const errData = err.response?.data;
+      if (errData?.errors) {
+        setEditErrors(errData.errors);
+      } else {
+        setError(errData?.error || "Failed to update project.");
+      }
+    } finally {
+      setUpdatingProject(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    setUpdatingProject(true);
+    setError(null);
+    try {
+      await api.delete(`/projects/${projectId}`);
+      setIsDeleteProjectOpen(false);
+      router.push("/dashboard/projects");
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to delete project.");
+      setIsDeleteProjectOpen(false);
+    } finally {
+      setUpdatingProject(false);
+    }
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -274,10 +380,11 @@ export default function ProjectDetailsPage({
 
   if (!project) return null;
 
-  // Calculate project completion percentage
+  // Calculate project completion percentage based on average of task progress
   const totalTasks = project.tasks.length;
-  const completedTasks = project.tasks.filter((t) => t.status === "DONE").length;
-  const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const totalProgress = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+  const progressPercent = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
+  const hasIncompleteTasks = project.tasks.some((t) => t.status !== "DONE" || t.progress < 100);
 
   const canManage = currentUser?.role === "ADMIN" || currentUser?.role === "PROJECT_MANAGER";
 
@@ -298,7 +405,19 @@ export default function ProjectDetailsPage({
           </div>
         </div>
         {canManage && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setIsDeleteProjectOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-all hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/45"
+            >
+              <Trash2 className="h-4 w-4" /> Delete Project
+            </button>
+            <button
+              onClick={openEditProjectModal}
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              <Edit className="h-4 w-4" /> Edit Project
+            </button>
             <button
               onClick={() => setIsAssignMemberOpen(true)}
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
@@ -502,23 +621,18 @@ export default function ProjectDetailsPage({
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Assign Project Member</h2>
             <form onSubmit={handleAssignMember} className="space-y-4">
               {currentUser?.role === "ADMIN" ? (
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Select Member</label>
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <option value="">Choose User</option>
-                    {globalUsers
-                      .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
-                      .map((gu) => (
-                        <option key={gu.id} value={gu.id}>
-                          {gu.name} ({gu.role})
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                <SelectDropdown
+                  label="Select Member"
+                  value={selectedUserId}
+                  onChange={setSelectedUserId}
+                  placeholder="Choose User"
+                  options={globalUsers
+                    .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
+                    .map((gu) => ({
+                      value: gu.id,
+                      label: `${gu.name} (${gu.role.replace("_", " ").toLowerCase()})`
+                    }))}
+                />
               ) : (
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">User ID</label>
@@ -587,19 +701,17 @@ export default function ProjectDetailsPage({
                 {taskErrors.description && <p className="mt-1 text-xs text-red-500">{taskErrors.description[0]}</p>}
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Priority</label>
-                  <select
-                    value={taskPriority}
-                    onChange={(e) => setTaskPriority(e.target.value as any)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
-                </div>
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <SelectDropdown
+                  label="Priority"
+                  value={taskPriority}
+                  onChange={(val) => setTaskPriority(val as any)}
+                  options={[
+                    { value: "LOW", label: "Low" },
+                    { value: "MEDIUM", label: "Medium" },
+                    { value: "HIGH", label: "High" }
+                  ]}
+                />
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
                   <input
@@ -608,26 +720,21 @@ export default function ProjectDetailsPage({
                     max={project?.endDate ? new Date(project.endDate).toISOString().split("T")[0] : undefined}
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Assign To Member</label>
-                <select
-                  value={taskAssigneeId}
-                  onChange={(e) => setTaskAssigneeId(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <option value="">Unassigned</option>
-                  {project.members.map((m) => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.user.name} ({m.user.role.replace("_", " ")})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectDropdown
+                label="Assign To Member"
+                value={taskAssigneeId}
+                onChange={setTaskAssigneeId}
+                placeholder="Unassigned"
+                options={project.members.map((m) => ({
+                  value: m.userId,
+                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                }))}
+              />
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
@@ -732,6 +839,152 @@ export default function ProjectDetailsPage({
           </div>
         );
       })()}
+
+      {/* EDIT PROJECT MODAL */}
+      {isEditProjectOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditProjectOpen(false)} />
+          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Edit Project Details</h2>
+            <form onSubmit={handleEditProject} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Project Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                />
+                {editErrors.name && <p className="mt-1 text-xs text-red-500">{editErrors.name[0]}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={3}
+                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                />
+                {editErrors.description && <p className="mt-1 text-xs text-red-500">{editErrors.description[0]}</p>}
+              </div>
+
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={editStartDate}
+                    onChange={(e) => setEditStartDate(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  />
+                  {editErrors.startDate && <p className="mt-1 text-xs text-red-500">{editErrors.startDate[0]}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={editEndDate}
+                    onChange={(e) => setEditEndDate(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  />
+                  {editErrors.endDate && <p className="mt-1 text-xs text-red-500">{editErrors.endDate[0]}</p>}
+                </div>
+              </div>
+
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <SelectDropdown
+                  label="Project Status"
+                  value={editStatus}
+                  onChange={setEditStatus}
+                  options={[
+                    { value: "PLANNING", label: "Planning" },
+                    { value: "ACTIVE", label: "Active" },
+                    { value: "ON_HOLD", label: "On Hold" },
+                    {
+                      value: "COMPLETED",
+                      label: hasIncompleteTasks ? "Completed (Incomplete tasks exist)" : "Completed",
+                      disabled: hasIncompleteTasks
+                    }
+                  ]}
+                />
+
+                {currentUser?.role === "ADMIN" && (
+                  <div>
+                    {fetchingManagers ? (
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project Manager</label>
+                        <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                      </div>
+                    ) : (
+                      <SelectDropdown
+                        label="Project Manager"
+                        value={editManagerId}
+                        onChange={setEditManagerId}
+                        placeholder="Select Manager"
+                        options={managers.map((m) => ({
+                          value: m.id,
+                          label: `${m.name} (${m.role.replace("_", " ").toLowerCase()})`
+                        }))}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditProjectOpen(false)}
+                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingProject}
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                >
+                  {updatingProject ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE PROJECT MODAL */}
+      {isDeleteProjectOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteProjectOpen(false)} />
+          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
+            <h2 className="text-xl font-bold text-red-650 dark:text-red-400 mb-2">Delete Project?</h2>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">
+              Are you sure you want to delete <span className="font-semibold text-zinc-850 dark:text-zinc-100">"{project?.name}"</span>? 
+              This will permanently delete all associated tasks, activities, and member relationships. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsDeleteProjectOpen(false)}
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteProject}
+                disabled={updatingProject}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-50"
+              >
+                {updatingProject ? "Deleting..." : "Permanently Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

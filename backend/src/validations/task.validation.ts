@@ -20,6 +20,7 @@ export const updateTaskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "DONE"], {
     message: "Status must be TODO, IN_PROGRESS, or DONE",
   }).optional(),
+  progress: z.number({ message: "Progress must be a number" }).int("Progress must be an integer").min(0, "Progress must be at least 0").max(100, "Progress cannot exceed 100").optional(),
   assignedToId: z.number().optional().nullable(),
   dueDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional().nullable(),
 });

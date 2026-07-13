@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft } from "lucide-react";
@@ -153,6 +154,7 @@ export default function TaskDetailsPage({
           description: description || null,
           priority,
           status,
+          progress,
           assignedToId: assignedToId ? parseInt(assignedToId, 10) : null,
           dueDate: dueDate || null,
         });
@@ -256,7 +258,7 @@ export default function TaskDetailsPage({
             {fieldErrors.description && <p className="mt-1 text-xs text-red-500">{fieldErrors.description[0]}</p>}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Parent Project</label>
               <input
@@ -267,38 +269,31 @@ export default function TaskDetailsPage({
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Assignee</label>
-              <select
-                disabled={!canManage}
-                value={assignedToId}
-                onChange={(e) => setAssignedToId(e.target.value)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
-              >
-                <option value="">Select Member</option>
-                {projectMembers.map((m) => (
-                  <option key={m.userId} value={m.userId}>
-                    {m.user.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SelectDropdown
+              label="Assignee"
+              disabled={!canManage}
+              value={assignedToId}
+              onChange={setAssignedToId}
+              placeholder="Select Member"
+              options={projectMembers.map((m) => ({
+                value: m.userId,
+                label: m.user.name
+              }))}
+            />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Priority</label>
-              <select
-                disabled={!canManage}
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as any)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
-            </div>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <SelectDropdown
+              label="Priority"
+              disabled={!canManage}
+              value={priority}
+              onChange={(val) => setPriority(val as any)}
+              options={[
+                { value: "LOW", label: "Low" },
+                { value: "MEDIUM", label: "Medium" },
+                { value: "HIGH", label: "High" }
+              ]}
+            />
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
@@ -314,20 +309,17 @@ export default function TaskDetailsPage({
             </div>
           </div>
 
-          {/* Progress Slider & Status Inputs */}
-          <div className="grid gap-4 sm:grid-cols-2 border-t border-zinc-150 pt-4 dark:border-zinc-800">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Task Status</label>
-              <select
-                value={status}
-                onChange={(e) => handleStatusChange(e.target.value as any)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-              >
-                <option value="TODO">To Do</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="DONE">Done</option>
-              </select>
-            </div>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 border-t border-zinc-150 pt-4 dark:border-zinc-800">
+            <SelectDropdown
+              label="Task Status"
+              value={status}
+              onChange={(val) => handleStatusChange(val as any)}
+              options={[
+                { value: "TODO", label: "To Do" },
+                { value: "IN_PROGRESS", label: "In Progress" },
+                { value: "DONE", label: "Done" }
+              ]}
+            />
 
             <div>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">

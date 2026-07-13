@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import {
   Briefcase,
   Plus,
@@ -138,17 +139,18 @@ export default function ProjectsPage() {
         <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-zinc-400" />
-            <select
+            <SelectDropdown
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="PLANNING">Planning</option>
-              <option value="ACTIVE">Active</option>
-              <option value="ON_HOLD">On Hold</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
+              onChange={setStatusFilter}
+              className="w-full sm:w-40"
+              options={[
+                { value: "ALL", label: "All Statuses" },
+                { value: "PLANNING", label: "Planning" },
+                { value: "ACTIVE", label: "Active" },
+                { value: "ON_HOLD", label: "On Hold" },
+                { value: "COMPLETED", label: "Completed" }
+              ]}
+            />
           </div>
 
           <div className="flex rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">

@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import api from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 
 interface ProjectOption {
   id: number;
@@ -148,61 +149,54 @@ export default function CreateTaskPage() {
               {fieldErrors.description && <p className="mt-1 text-xs text-red-500">{fieldErrors.description[0]}</p>}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Select Project</label>
                 {fetchingProjects ? (
-                  <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Select Project</label>
+                    <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                  </div>
                 ) : (
-                  <select
+                  <SelectDropdown
+                    label="Select Project"
                     value={projectId}
-                    onChange={(e) => {
-                      setProjectId(e.target.value);
+                    onChange={(val) => {
+                      setProjectId(val);
                       setAssignedToId(""); // reset assignee since project changed
                     }}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <option value="">Choose Project</option>
-                    {projects.map((proj) => (
-                      <option key={proj.id} value={proj.id}>
-                        {proj.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Choose Project"
+                    options={projects.map((proj) => ({
+                      value: proj.id,
+                      label: proj.name
+                    }))}
+                  />
                 )}
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Assignee</label>
-                <select
-                  value={assignedToId}
-                  onChange={(e) => setAssignedToId(e.target.value)}
-                  disabled={!projectId}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <option value="">Select Member</option>
-                  {selectedProject?.members?.map((m) => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.user.name} ({m.user.role.replace("_", " ")})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SelectDropdown
+                label="Assignee"
+                value={assignedToId}
+                onChange={setAssignedToId}
+                placeholder="Select Member"
+                disabled={!projectId}
+                options={selectedProject?.members?.map((m) => ({
+                  value: m.userId,
+                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                })) || []}
+              />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Priority</label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value as any)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
-              </div>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <SelectDropdown
+                label="Priority"
+                value={priority}
+                onChange={(val) => setPriority(val as any)}
+                options={[
+                  { value: "LOW", label: "Low" },
+                  { value: "MEDIUM", label: "Medium" },
+                  { value: "HIGH", label: "High" }
+                ]}
+              />
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>

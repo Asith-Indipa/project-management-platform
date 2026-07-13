@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 
 interface User {
   id: number;
@@ -218,19 +219,20 @@ export default function UsersPage() {
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Filter className="h-4 w-4 text-zinc-400" />
-            <select
+            <SelectDropdown
               value={roleFilter}
-              onChange={(e) => {
-                setRoleFilter(e.target.value);
+              onChange={(val) => {
+                setRoleFilter(val);
                 setCurrentPage(1);
               }}
-              className="w-full sm:w-auto rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="PROJECT_MANAGER">Project Manager</option>
-              <option value="TEAM_MEMBER">Team Member</option>
-            </select>
+              className="w-full sm:w-48"
+              options={[
+                { value: "ALL", label: "All Roles" },
+                { value: "ADMIN", label: "Admin" },
+                { value: "PROJECT_MANAGER", label: "Project Manager" },
+                { value: "TEAM_MEMBER", label: "Team Member" }
+              ]}
+            />
           </div>
         </div>
 
@@ -367,18 +369,17 @@ export default function UsersPage() {
                   />
                   {formErrors.password && <p className="mt-1 text-xs text-red-500">{formErrors.password[0]}</p>}
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Role</label>
-                  <select
+                  <SelectDropdown
+                    label="Role"
                     value={role}
-                    onChange={(e) => setRole(e.target.value as any)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <option value="TEAM_MEMBER">Team Member</option>
-                    <option value="PROJECT_MANAGER">Project Manager</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
+                    onChange={(val) => setRole(val as any)}
+                    options={[
+                      { value: "TEAM_MEMBER", label: "Team Member" },
+                      { value: "PROJECT_MANAGER", label: "Project Manager" },
+                      { value: "ADMIN", label: "Admin" }
+                    ]}
+                    error={formErrors.role}
+                  />
                 <div className="flex justify-end gap-2 mt-6">
                   <button
                     type="button"
@@ -428,18 +429,17 @@ export default function UsersPage() {
                   />
                   {formErrors.email && <p className="mt-1 text-xs text-red-500">{formErrors.email[0]}</p>}
                 </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Role</label>
-                  <select
+                  <SelectDropdown
+                    label="Role"
                     value={role}
-                    onChange={(e) => setRole(e.target.value as any)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <option value="TEAM_MEMBER">Team Member</option>
-                    <option value="PROJECT_MANAGER">Project Manager</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
+                    onChange={(val) => setRole(val as any)}
+                    options={[
+                      { value: "TEAM_MEMBER", label: "Team Member" },
+                      { value: "PROJECT_MANAGER", label: "Project Manager" },
+                      { value: "ADMIN", label: "Admin" }
+                    ]}
+                    error={formErrors.role}
+                  />
                 <div className="flex justify-end gap-2 mt-6">
                   <button
                     type="button"

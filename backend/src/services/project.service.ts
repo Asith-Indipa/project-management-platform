@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { Role } from "@prisma/client";
-import { logActivity, sendNotification } from "./extra.service";
+import { logActivity, sendNotification, checkAndUpdateProjectCompletion } from "./extra.service";
 
 export const createProject = async (projectData: any) => {
   const { name, description, managerId, startDate, endDate, status } = projectData;
@@ -62,7 +62,7 @@ export const getAllProjects = async (userId: number, userRole: Role) => {
     };
   }
 
-  return prisma.project.findMany({
+  const projects = await prisma.project.findMany({
     where: whereClause,
     include: {
       manager: {
@@ -99,9 +99,21 @@ export const getAllProjects = async (userId: number, userRole: Role) => {
       },
     },
   });
+
+  return projects.map((project) => {
+    const totalTasks = project.tasks.length;
+    const totalProgress = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const completionPercentage = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
+    return {
+      ...project,
+      completionPercentage,
+    };
+  });
 };
 
 export const getProjectById = async (id: number, userId: number, userRole: Role) => {
+  await checkAndUpdateProjectCompletion(id);
+
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
@@ -156,7 +168,10 @@ export const getProjectById = async (id: number, userId: number, userRole: Role)
     }
   }
 
-  return project;
+  return {
+    ...project,
+    completionPercentage: project.tasks.length > 0 ? Math.round(project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / project.tasks.length) : 0,
+  };
 };
 
 export const updateProject = async (id: number, userId: number, userRole: Role, updateData: any) => {
@@ -185,6 +200,21 @@ export const updateProject = async (id: number, userId: number, userRole: Role, 
     }
     if (newManager.role !== Role.ADMIN && newManager.role !== Role.PROJECT_MANAGER) {
       throw new Error("New manager must have ADMIN or PROJECT_MANAGER role");
+    }
+  }
+  if (status === "COMPLETED") {
+    const incompleteTasksCount = await prisma.task.count({
+      where: {
+        projectId: id,
+        OR: [
+          { status: { not: "DONE" } },
+          { progress: { lt: 100 } }
+        ]
+      }
+    });
+
+    if (incompleteTasksCount > 0) {
+      throw new Error("Cannot set project status to COMPLETED because some tasks are not 100% complete.");
     }
   }
 
@@ -237,19 +267,21 @@ export const deleteProject = async (id: number, userId: number, userRole: Role) 
     throw new Error("Access denied. You do not have permission to delete this project.");
   }
 
-  // Delete all tasks associated with this project first (Prisma transaction / cascade delete)
-  await prisma.task.deleteMany({
-    where: { projectId: id },
-  });
-
-  // Delete all project member relations
-  await prisma.projectMember.deleteMany({
-    where: { projectId: id },
-  });
-
-  await prisma.project.delete({
-    where: { id },
-  });
+  // Delete all tasks, project member relations, activities, and the project within a transaction to maintain integrity
+  await prisma.$transaction([
+    prisma.task.deleteMany({
+      where: { projectId: id },
+    }),
+    prisma.projectMember.deleteMany({
+      where: { projectId: id },
+    }),
+    prisma.activity.deleteMany({
+      where: { projectId: id },
+    }),
+    prisma.project.delete({
+      where: { id },
+    }),
+  ]);
 
   return { message: "Project deleted successfully" };
 };
@@ -383,12 +415,14 @@ export const getProjectProgress = async (projectId: number, userId: number, user
     }
   }
 
-  const totalTasks = await prisma.task.count({ where: { projectId } });
-  const completedTasks = await prisma.task.count({ where: { projectId, status: "DONE" } });
-  const inProgressTasks = await prisma.task.count({ where: { projectId, status: "IN_PROGRESS" } });
-  const todoTasks = await prisma.task.count({ where: { projectId, status: "TODO" } });
+  const tasks = await prisma.task.findMany({ where: { projectId } });
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === "DONE").length;
+  const inProgressTasks = tasks.filter((t) => t.status === "IN_PROGRESS").length;
+  const todoTasks = tasks.filter((t) => t.status === "TODO").length;
 
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const totalProgress = tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+  const completionPercentage = totalTasks > 0 ? Math.round(totalProgress / totalTasks) : 0;
 
   return {
     projectId,

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
 import {
   CheckSquare,
   Plus,
@@ -176,9 +177,9 @@ export default function TasksPage() {
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (task.projectName && task.projectName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (task.assignedTo?.name && task.assignedTo.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (task.description ? task.description.toLowerCase().includes(searchTerm.toLowerCase()) : false) ||
+      (task.projectName ? task.projectName.toLowerCase().includes(searchTerm.toLowerCase()) : false) ||
+      (task.assignedTo?.name ? task.assignedTo.name.toLowerCase().includes(searchTerm.toLowerCase()) : false);
     
     const matchesStatus = statusFilter === "ALL" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "ALL" || task.priority === priorityFilter;
@@ -250,28 +251,30 @@ export default function TasksPage() {
           </button>
 
           {/* Status filter */}
-          <select
+          <SelectDropdown
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="DONE">Done</option>
-          </select>
+            onChange={setStatusFilter}
+            className="w-full sm:w-40"
+            options={[
+              { value: "ALL", label: "All Statuses" },
+              { value: "TODO", label: "To Do" },
+              { value: "IN_PROGRESS", label: "In Progress" },
+              { value: "DONE", label: "Done" }
+            ]}
+          />
 
           {/* Priority filter */}
-          <select
+          <SelectDropdown
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <option value="ALL">All Priorities</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-          </select>
+            onChange={setPriorityFilter}
+            className="w-full sm:w-40"
+            options={[
+              { value: "ALL", label: "All Priorities" },
+              { value: "LOW", label: "Low" },
+              { value: "MEDIUM", label: "Medium" },
+              { value: "HIGH", label: "High" }
+            ]}
+          />
         </div>
       </div>
 
@@ -317,7 +320,7 @@ export default function TasksPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 font-bold text-[10px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                          {task.assignedTo?.name.charAt(0).toUpperCase() || "?"}
+                          {task.assignedTo?.name ? task.assignedTo.name.charAt(0).toUpperCase() : "?"}
                         </div>
                         <span className="text-sm text-zinc-650 dark:text-zinc-300">{task.assignedTo?.name || "Unassigned"}</span>
                       </div>
@@ -387,18 +390,16 @@ export default function TasksPage() {
               Updating status will automatically recalibrate task progress based on your workflow.
             </p>
             <form onSubmit={handleUpdateStatusSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Status</label>
-                <select
+                <SelectDropdown
+                  label="Status"
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value as any)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <option value="TODO">To Do</option>
-                  <option value="IN_PROGRESS">In Progress</option>
-                  <option value="DONE">Done</option>
-                </select>
-              </div>
+                  onChange={(val) => setNewStatus(val as any)}
+                  options={[
+                    { value: "TODO", label: "To Do" },
+                    { value: "IN_PROGRESS", label: "In Progress" },
+                    { value: "DONE", label: "Done" }
+                  ]}
+                />
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
