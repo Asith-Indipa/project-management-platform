@@ -5,6 +5,7 @@ import { Menu, Bell, Sun, Moon } from "lucide-react";
 import Breadcrumb from "./Breadcrumb";
 import UserProfileDropdown from "./UserProfileDropdown";
 import api from "@/lib/api";
+import Link from "next/link";
 
 interface NavbarProps {
   onMenuOpen: () => void;
@@ -137,7 +138,7 @@ export default function Navbar({ onMenuOpen }: NavbarProps) {
                 {notifications.length === 0 ? (
                   <div className="px-4 py-6 text-center text-xs text-zinc-400">No notifications.</div>
                 ) : (
-                  notifications.map((notif) => (
+                  notifications.slice(0, 10).map((notif) => (
                     <div
                       key={notif.id}
                       onClick={() => !notif.isRead && handleMarkAsRead(notif.id)}
@@ -155,6 +156,17 @@ export default function Navbar({ onMenuOpen }: NavbarProps) {
                   ))
                 )}
               </div>
+              {notifications.length > 0 && (
+                <div className="p-2 border-t border-zinc-100 dark:border-zinc-800">
+                  <Link 
+                    href="/dashboard/notifications" 
+                    onClick={() => setIsNotifOpen(false)}
+                    className="block w-full text-center py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:text-indigo-300 dark:hover:bg-indigo-950/30 rounded-md transition-colors"
+                  >
+                    See all notifications
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>

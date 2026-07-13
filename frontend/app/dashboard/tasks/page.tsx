@@ -346,13 +346,15 @@ export default function TasksPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                      <button
-                        onClick={() => openStatusModal(task)}
-                        className="inline-flex items-center rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                        title="Update status"
-                      >
-                        <Play className="h-4 w-4" />
-                      </button>
+                      {(canManage || task.assignedTo?.id === user?.id) && (
+                        <button
+                          onClick={() => openStatusModal(task)}
+                          className="inline-flex items-center rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                          title="Update status"
+                        >
+                          <Play className="h-4 w-4" />
+                        </button>
+                      )}
                       {canManage && (
                         <>
                           <Link

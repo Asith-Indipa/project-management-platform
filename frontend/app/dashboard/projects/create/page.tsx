@@ -33,6 +33,16 @@ export default function CreateProjectPage() {
   const [endDate, setEndDate] = useState("");
   const [managerId, setManagerId] = useState<string>("");
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   useEffect(() => {
     // Fetch managers list only if user is Admin (PM doesn't need to choose)
     const fetchManagers = async () => {
@@ -160,6 +170,7 @@ export default function CreateProjectPage() {
                 <input
                   type="date"
                   value={startDate}
+                  min={todayStr}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950"
                 />
@@ -171,6 +182,7 @@ export default function CreateProjectPage() {
                 <input
                   type="date"
                   value={endDate}
+                  min={startDate || todayStr}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950"
                 />

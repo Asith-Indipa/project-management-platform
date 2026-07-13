@@ -63,6 +63,16 @@ export default function TaskDetailsPage({
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   const fetchTaskDetails = async () => {
     try {
       setLoading(true);
@@ -199,6 +209,8 @@ export default function TaskDetailsPage({
   if (!task) return null;
 
   const canManage = currentUser?.role === "ADMIN" || currentUser?.role === "PROJECT_MANAGER";
+  const isMyTask = task.assignedTo?.id === currentUser?.id;
+  const canEditStatus = canManage || isMyTask;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
@@ -275,10 +287,16 @@ export default function TaskDetailsPage({
               value={assignedToId}
               onChange={setAssignedToId}
               placeholder="Select Member"
-              options={projectMembers.map((m) => ({
-                value: m.userId,
-                label: m.user.name
-              }))}
+              options={[
+                ...(selectedProject?.manager ? [{
+                  value: selectedProject.manager.id,
+                  label: `${selectedProject.manager.name} (project manager)`
+                }] : []),
+                ...projectMembers.map((m) => ({
+                  value: m.userId,
+                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                }))
+              ]}
             />
           </div>
 
@@ -300,7 +318,7 @@ export default function TaskDetailsPage({
               <input
                 type="date"
                 disabled={!canManage}
-                min={selectedProject?.startDate ? new Date(selectedProject.startDate).toISOString().split("T")[0] : undefined}
+                min={selectedProject?.startDate && new Date(selectedProject.startDate).toISOString().split("T")[0] > todayStr ? new Date(selectedProject.startDate).toISOString().split("T")[0] : todayStr}
                 max={selectedProject?.endDate ? new Date(selectedProject.endDate).toISOString().split("T")[0] : undefined}
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
@@ -313,6 +331,7 @@ export default function TaskDetailsPage({
             <SelectDropdown
               label="Task Status"
               value={status}
+              disabled={!canEditStatus}
               onChange={(val) => handleStatusChange(val as any)}
               options={[
                 { value: "TODO", label: "To Do" },
@@ -332,13 +351,20 @@ export default function TaskDetailsPage({
                   min="0"
                   max="100"
                   step="5"
+                  disabled={!canEditStatus}
                   value={progress}
                   onChange={(e) => handleProgressChange(parseInt(e.target.value, 10))}
-                  className="w-full accent-indigo-600 h-1.5 rounded bg-zinc-100 dark:bg-zinc-800 outline-none"
+                  className="w-full accent-indigo-600 h-1.5 rounded bg-zinc-100 dark:bg-zinc-800 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
           </div>
+
+          {!canEditStatus && (
+            <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
+              This task is assigned to another team member. You can only view it.
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 mt-6 border-t border-zinc-100 pt-4 dark:border-zinc-800">
             <Link
@@ -347,13 +373,15 @@ export default function TaskDetailsPage({
             >
               Back
             </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
+            {canEditStatus && (
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            )}
           </div>
         </form>
       </div>

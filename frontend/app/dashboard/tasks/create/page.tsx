@@ -13,6 +13,12 @@ interface ProjectOption {
   name: string;
   startDate: string | null;
   endDate: string | null;
+  manager?: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
   members: {
     userId: number;
     user: {
@@ -39,6 +45,16 @@ export default function CreateTaskPage() {
   const [dueDate, setDueDate] = useState("");
   const [projectId, setProjectId] = useState<string>("");
   const [assignedToId, setAssignedToId] = useState<string>("");
+
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -179,10 +195,16 @@ export default function CreateTaskPage() {
                 onChange={setAssignedToId}
                 placeholder="Select Member"
                 disabled={!projectId}
-                options={selectedProject?.members?.map((m) => ({
-                  value: m.userId,
-                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
-                })) || []}
+                options={[
+                  ...(selectedProject?.manager ? [{
+                    value: selectedProject.manager.id,
+                    label: `${selectedProject.manager.name} (project manager)`
+                  }] : []),
+                  ...(selectedProject?.members?.map((m) => ({
+                    value: m.userId,
+                    label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                  })) || [])
+                ]}
               />
             </div>
 
@@ -202,7 +224,7 @@ export default function CreateTaskPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
                 <input
                   type="date"
-                  min={selectedProject?.startDate ? new Date(selectedProject.startDate).toISOString().split("T")[0] : undefined}
+                  min={selectedProject?.startDate && new Date(selectedProject.startDate).toISOString().split("T")[0] > todayStr ? new Date(selectedProject.startDate).toISOString().split("T")[0] : todayStr}
                   max={selectedProject?.endDate ? new Date(selectedProject.endDate).toISOString().split("T")[0] : undefined}
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}

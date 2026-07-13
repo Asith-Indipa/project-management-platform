@@ -68,9 +68,14 @@ export const createTask = async (taskData: any, currentUserId: number, currentUs
     },
   });
 
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
   await logActivity(`created Task "${title}" in Project "${project.name}"`, currentUserId, projectId);
   if (assignedToId) {
-    await sendNotification(`Task "${title}" in Project "${project.name}" has been assigned to you.`, assignedToId);
+    if (assignedToId !== currentUserId) {
+      await sendNotification(`Task "${title}" in Project "${project.name}" has been assigned to you by ${actorText}.`, assignedToId);
+    }
   }
 
   return task;
@@ -217,8 +222,13 @@ export const updateTask = async (taskId: number, updateData: any, currentUserId:
 
   await logActivity(`updated Task "${updatedTask.title}"`, currentUserId, updatedTask.projectId);
 
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
   if (assignedToId && assignedToId !== task.assignedToId) {
-    await sendNotification(`Task "${updatedTask.title}" has been assigned to you.`, assignedToId);
+    if (assignedToId !== currentUserId) {
+      await sendNotification(`Task "${updatedTask.title}" has been assigned to you by ${actorText}.`, assignedToId);
+    }
   }
 
   return updatedTask;
@@ -246,6 +256,15 @@ export const deleteTask = async (taskId: number, currentUserId: number, currentU
   });
 
   await checkAndUpdateProjectCompletion(task.projectId);
+
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+  
+  await logActivity(`deleted Task "${task.title}" from Project "${task.project.name}"`, currentUserId, task.projectId);
+
+  if (task.assignedToId && task.assignedToId !== currentUserId) {
+    await sendNotification(`Task "${task.title}" in Project "${task.project.name}" was deleted by ${actorText}.`, task.assignedToId);
+  }
 
   return { message: "Task deleted successfully" };
 };
@@ -296,7 +315,13 @@ export const assignTask = async (taskId: number, assignedToId: number, currentUs
   });
 
   await logActivity(`assigned Task "${task.title}" to ${updatedTask.assignedTo?.name}`, currentUserId, task.projectId);
-  await sendNotification(`Task "${task.title}" has been assigned to you.`, assignedToId);
+
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
+  if (assignedToId !== currentUserId) {
+    await sendNotification(`Task "${task.title}" has been assigned to you by ${actorText}.`, assignedToId);
+  }
 
   return updatedTask;
 };

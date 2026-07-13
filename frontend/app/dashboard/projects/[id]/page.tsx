@@ -113,6 +113,16 @@ export default function ProjectDetailsPage({
   const [fetchingManagers, setFetchingManagers] = useState(false);
   const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false);
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   const openEditProjectModal = () => {
     if (!project) return;
     setEditName(project.name);
@@ -703,7 +713,7 @@ export default function ProjectDetailsPage({
                   <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
                   <input
                     type="date"
-                    min={project?.startDate ? new Date(project.startDate).toISOString().split("T")[0] : undefined}
+                    min={project?.startDate && new Date(project.startDate).toISOString().split("T")[0] > todayStr ? new Date(project.startDate).toISOString().split("T")[0] : todayStr}
                     max={project?.endDate ? new Date(project.endDate).toISOString().split("T")[0] : undefined}
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
@@ -717,10 +727,16 @@ export default function ProjectDetailsPage({
                 value={taskAssigneeId}
                 onChange={setTaskAssigneeId}
                 placeholder="Unassigned"
-                options={project.members.map((m) => ({
-                  value: m.userId,
-                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
-                }))}
+                options={[
+                  ...(project.manager ? [{
+                    value: project.manager.id,
+                    label: `${project.manager.name} (project manager) ${project.manager.id === currentUser?.id ? "[You]" : ""}`
+                  }] : []),
+                  ...project.members.map((m) => ({
+                    value: m.userId,
+                    label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                  }))
+                ]}
               />
 
               <div className="flex justify-end gap-2 mt-6">
@@ -863,6 +879,7 @@ export default function ProjectDetailsPage({
                   <input
                     type="date"
                     value={editStartDate}
+                    min={todayStr}
                     onChange={(e) => setEditStartDate(e.target.value)}
                     className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
                   />
@@ -874,6 +891,7 @@ export default function ProjectDetailsPage({
                   <input
                     type="date"
                     value={editEndDate}
+                    min={editStartDate || todayStr}
                     onChange={(e) => setEditEndDate(e.target.value)}
                     className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
                   />
