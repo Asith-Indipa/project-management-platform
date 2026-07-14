@@ -30,6 +30,11 @@ export const getMyTasks = async (userId: number) => {
       status: true,
       progress: true,
       dueDate: true,
+      project: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 };

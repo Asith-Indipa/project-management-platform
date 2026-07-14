@@ -129,46 +129,46 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Settings</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="pb-4">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Settings</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           Manage system preferences, view profile credentials, and personalize layout settings.
         </p>
       </div>
 
       {saveSuccess && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700 dark:bg-green-950/20 dark:text-green-400 flex items-center gap-2">
+        <div className="rounded-xl bg-emerald-500/10 p-4 text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-2 border border-emerald-500/20 shadow-sm animate-in fade-in duration-300">
           <CheckCircle className="h-4 w-4" /> System preferences updated.
         </div>
       )}
 
       {profileSuccess && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700 dark:bg-green-950/20 dark:text-green-400 flex items-center gap-2">
+        <div className="rounded-xl bg-emerald-500/10 p-4 text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-2 border border-emerald-500/20 shadow-sm animate-in fade-in duration-300">
           <CheckCircle className="h-4 w-4" /> Profile details updated successfully.
         </div>
       )}
 
       {/* Profile Card */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4 flex items-center gap-2">
-          <User className="h-5 w-5 text-indigo-500" /> Account Profile
+      <div className="rounded-2xl border border-border glass-card p-6 sm:p-8 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2 tracking-tight">
+          <User className="h-5 w-5 text-primary" /> Account Profile
         </h2>
 
-        <form onSubmit={handleProfileUpdate} noValidate className="space-y-4">
+        <form onSubmit={handleProfileUpdate} noValidate className="space-y-5">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600 dark:bg-red-950/50 dark:text-red-400">
+            <div className="rounded-xl bg-destructive/10 p-4 text-sm font-medium text-destructive border border-destructive/20 animate-in fade-in duration-300">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Full Name
             </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+            <div className="relative group">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground group-focus-within:text-primary transition-colors">
                 <User className="h-4 w-4" />
               </span>
               <input
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+                className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
               />
             </div>
             {fieldErrors.name && (
@@ -185,11 +185,11 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Email Address
             </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+            <div className="relative group">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground group-focus-within:text-primary transition-colors">
                 <Mail className="h-4 w-4" />
               </span>
               <input
@@ -197,20 +197,20 @@ export default function SettingsPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+                className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
               />
             </div>
             {fieldErrors.email && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.email[0]}</p>
+              <p className="mt-1 text-xs text-destructive">{fieldErrors.email[0]}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               New Password (Optional)
             </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+            <div className="relative group">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground group-focus-within:text-primary transition-colors">
                 <Lock className="h-4 w-4" />
               </span>
               <input
@@ -218,39 +218,39 @@ export default function SettingsPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+                className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
               />
             </div>
-            <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+            <p className="mt-1.5 text-[10px] text-muted-foreground">
               Leave blank to keep current password. If updating, must be at least 6 characters.
             </p>
             {fieldErrors.password && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.password[0]}</p>
+              <p className="mt-1 text-xs text-destructive">{fieldErrors.password[0]}</p>
             )}
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-zinc-50 border border-zinc-100 rounded-lg dark:bg-zinc-950 dark:border-zinc-800">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+          <div className="flex items-center gap-3 p-4 bg-muted/30 border border-border rounded-xl">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Shield className="h-5 w-5" />
             </div>
             <div>
-              <span className="block text-xs font-bold uppercase tracking-wider text-zinc-400">System Role</span>
-              <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">System Role</span>
+              <span className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-0.5 mt-1 text-[11px] font-bold text-primary">
                 {user?.role || "N/A"}
               </span>
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-4">
             <button
               type="submit"
               disabled={updating}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:opacity-95 active:scale-95 disabled:opacity-50 disabled:pointer-events-none dark:from-indigo-500 dark:to-purple-500"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-[1.02] disabled:opacity-50 disabled:pointer-events-none"
             >
               {updating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Saving Changes...</span>
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
@@ -264,11 +264,11 @@ export default function SettingsPage() {
       </div>
 
       {/* Appearance Settings */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-2 flex items-center gap-2">
-          <Moon className="h-5 w-5 text-indigo-500" /> Appearance
+      <div className="rounded-2xl border border-border glass-card p-6 sm:p-8 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2 tracking-tight">
+          <Moon className="h-5 w-5 text-primary" /> Appearance
         </h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6">
+        <p className="text-sm text-muted-foreground mb-8">
           Customize the visual interface of your project management workspace.
         </p>
 
@@ -276,26 +276,26 @@ export default function SettingsPage() {
           {/* Light Theme Button */}
           <button
             onClick={() => handleThemeToggle("light")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
+            className={`flex flex-col items-center justify-center p-6 rounded-xl border text-center transition-all duration-200 ${
               !darkMode
-                ? "border-indigo-650 bg-indigo-50/20 text-indigo-650 dark:border-indigo-500"
-                : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
+                ? "border-primary bg-primary/10 text-primary ring-1 ring-primary shadow-sm"
+                : "border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <Sun className="h-6 w-6 mb-2" />
+            <Sun className="h-7 w-7 mb-3" />
             <span className="text-sm font-semibold">Light Mode</span>
           </button>
 
           {/* Dark Theme Button */}
           <button
             onClick={() => handleThemeToggle("dark")}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all ${
+            className={`flex flex-col items-center justify-center p-6 rounded-xl border text-center transition-all duration-200 ${
               darkMode
-                ? "border-indigo-650 bg-indigo-50/20 text-indigo-400 dark:border-indigo-500"
-                : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
+                ? "border-primary bg-primary/10 text-primary ring-1 ring-primary shadow-sm"
+                : "border-border bg-background/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
-            <Moon className="h-6 w-6 mb-2" />
+            <Moon className="h-7 w-7 mb-3" />
             <span className="text-sm font-semibold">Dark Mode</span>
           </button>
         </div>

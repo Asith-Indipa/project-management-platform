@@ -193,17 +193,17 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Tasks</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Tasks</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             View allocated tasks, modify progress stats, and review upcoming project milestones.
           </p>
         </div>
         {canManage && (
           <Link
             href="/dashboard/tasks/create"
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-500"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-[1.02]"
           >
             <Plus className="h-4 w-4" /> Create Task
           </Link>
@@ -225,15 +225,15 @@ export default function TasksPage() {
       )}
 
       {/* Filters Panel */}
-      <div className="flex flex-col xl:flex-row gap-4 items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-        <div className="relative w-full xl:max-w-xs">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+      <div className="relative z-10 flex flex-col xl:flex-row gap-4 items-center justify-between rounded-2xl border border-border glass-card p-3">
+        <div className="relative w-full xl:max-w-xs group">
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
             type="text"
             placeholder="Search tasks..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 bg-zinc-50 pl-10 pr-4 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950"
+            className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
           />
         </div>
 
@@ -241,40 +241,48 @@ export default function TasksPage() {
           {/* My Tasks toggle */}
           <button
             onClick={() => setMyTasksOnly(!myTasksOnly)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold border transition-all ${
+            className={`rounded-xl px-4 py-2.5 text-sm font-semibold border transition-all ${
               myTasksOnly
-                ? "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900"
-                : "bg-white border-zinc-200 text-zinc-600 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400"
+                ? "bg-primary/10 border-primary/20 text-primary"
+                : "bg-background/50 border-border text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
             My Tasks Only
           </button>
 
           {/* Status filter */}
-          <SelectDropdown
-            value={statusFilter}
-            onChange={setStatusFilter}
-            className="w-full sm:w-40"
-            options={[
-              { value: "ALL", label: "All Statuses" },
-              { value: "TODO", label: "To Do" },
-              { value: "IN_PROGRESS", label: "In Progress" },
-              { value: "DONE", label: "Done" }
-            ]}
-          />
+          <div className="flex items-center gap-2 bg-background/50 border border-border rounded-xl px-2">
+            <Filter className="h-4 w-4 text-muted-foreground ml-2 hidden sm:block" />
+            <SelectDropdown
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full sm:w-36"
+              buttonClassName="border-0 focus:ring-0 bg-transparent shadow-none dark:bg-transparent"
+              options={[
+                { value: "ALL", label: "All Statuses" },
+                { value: "TODO", label: "To Do" },
+                { value: "IN_PROGRESS", label: "In Progress" },
+                { value: "DONE", label: "Done" }
+              ]}
+            />
+          </div>
 
           {/* Priority filter */}
-          <SelectDropdown
-            value={priorityFilter}
-            onChange={setPriorityFilter}
-            className="w-full sm:w-40"
-            options={[
-              { value: "ALL", label: "All Priorities" },
-              { value: "LOW", label: "Low" },
-              { value: "MEDIUM", label: "Medium" },
-              { value: "HIGH", label: "High" }
-            ]}
-          />
+          <div className="flex items-center gap-2 bg-background/50 border border-border rounded-xl px-2">
+            <AlertTriangle className="h-4 w-4 text-muted-foreground ml-2 hidden sm:block" />
+            <SelectDropdown
+              value={priorityFilter}
+              onChange={setPriorityFilter}
+              className="w-full sm:w-36"
+              buttonClassName="border-0 focus:ring-0 bg-transparent shadow-none dark:bg-transparent"
+              options={[
+                { value: "ALL", label: "All Priorities" },
+                { value: "LOW", label: "Low" },
+                { value: "MEDIUM", label: "Medium" },
+                { value: "HIGH", label: "High" }
+              ]}
+            />
+          </div>
         </div>
       </div>
 
@@ -290,58 +298,66 @@ export default function TasksPage() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No tasks found matching current filters.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-          <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left">
-            <thead className="bg-zinc-50 dark:bg-zinc-950">
+        <div className="overflow-x-auto rounded-2xl border border-border glass-card">
+          <table className="min-w-full divide-y divide-border text-left">
+            <thead className="bg-muted/30">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Task Title</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Assignee</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Priority</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Deadline</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Task Title</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Assignee</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Priority</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Deadline</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-border/50">
               {filteredTasks.map((task) => {
                 const overdue = isOverdue(task);
                 return (
-                  <tr key={task.id} className="hover:bg-zinc-50/55 dark:hover:bg-zinc-800/40">
+                  <tr key={task.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-50">{task.title}</div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[180px]">
+                      <div className="font-semibold text-foreground group-hover:text-primary transition-colors">{task.title}</div>
+                      <div className="text-xs text-muted-foreground truncate max-w-[180px] mt-1">
                         {task.description || "No description."}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-medium">
                       {task.projectName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 font-bold text-[10px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted font-bold text-[10px] text-foreground border border-border">
                           {task.assignedTo?.name ? task.assignedTo.name.charAt(0).toUpperCase() : "?"}
                         </div>
-                        <span className="text-sm text-zinc-650 dark:text-zinc-300">{task.assignedTo?.name || "Unassigned"}</span>
+                        <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{task.assignedTo?.name || "Unassigned"}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        task.priority === "HIGH" ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                        : task.priority === "MEDIUM" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      }`}>
                         {task.priority}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">{formatDate(task.dueDate)}</span>
+                        <span className="text-sm font-medium text-muted-foreground">{formatDate(task.dueDate)}</span>
                         {overdue && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 dark:text-red-400 mt-0.5 animate-pulse">
-                            <AlertTriangle className="h-3 w-3" /> Overdue
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-destructive mt-1 animate-pulse">
+                            <AlertTriangle className="h-3.5 w-3.5" /> Overdue
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${getStatusColor(task.status)}`}>
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        task.status === "DONE" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : task.status === "IN_PROGRESS" ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                      }`}>
                         {task.status.replace("_", " ")} ({task.progress}%)
                       </span>
                     </td>
@@ -349,7 +365,7 @@ export default function TasksPage() {
                       {(canManage || task.assignedTo?.id === user?.id) && (
                         <button
                           onClick={() => openStatusModal(task)}
-                          className="inline-flex items-center rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                          className="inline-flex items-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                           title="Update status"
                         >
                           <Play className="h-4 w-4" />
@@ -359,14 +375,14 @@ export default function TasksPage() {
                         <>
                           <Link
                             href={`/dashboard/tasks/${task.id}`}
-                            className="inline-flex items-center rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                            className="inline-flex items-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                             title="Edit details"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Link>
                           <button
                             onClick={() => openDeleteModal(task)}
-                            className="inline-flex items-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/20"
+                            className="inline-flex items-center rounded-lg p-2 text-destructive/70 hover:bg-destructive/10 hover:text-destructive transition-colors"
                             title="Delete task"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -385,10 +401,10 @@ export default function TasksPage() {
       {/* UPDATE STATUS MODAL */}
       {isStatusOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsStatusOpen(false)} />
-          <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">Update Task Status</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsStatusOpen(false)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Update Task Status</h2>
+            <p className="text-sm text-muted-foreground mb-6">
               Updating status will automatically recalibrate task progress based on your workflow.
             </p>
             <form onSubmit={handleUpdateStatusSubmit} className="space-y-4">
@@ -403,18 +419,18 @@ export default function TasksPage() {
                   ]}
                 />
 
-              <div className="flex justify-end gap-2 mt-6">
+              <div className="flex justify-end gap-3 mt-8">
                 <button
                   type="button"
                   onClick={() => setIsStatusOpen(false)}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updating}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-sm"
                 >
                   {updating ? "Updating..." : "Update Status"}
                 </button>
@@ -427,26 +443,26 @@ export default function TasksPage() {
       {/* DELETE DIALOG */}
       {isDeleteOpen && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteOpen(false)} />
-          <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <div className="flex items-center gap-3 text-red-650 dark:text-red-450 mb-3">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
-              <h2 className="text-lg font-bold">Confirm Deletion</h2>
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsDeleteOpen(false)} />
+          <div className="relative w-full max-w-sm rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-destructive mb-3">
+              <AlertTriangle className="h-6 w-6" />
+              <h2 className="text-lg font-bold tracking-tight">Confirm Deletion</h2>
             </div>
-            <p className="text-sm text-zinc-650 dark:text-zinc-400 mb-6">
-              Are you sure you want to delete task <span className="font-semibold text-zinc-900 dark:text-zinc-50">{selectedTask.title}</span>? This action cannot be undone.
+            <p className="text-sm text-muted-foreground mb-8">
+              Are you sure you want to delete task <span className="font-semibold text-foreground">{selectedTask.title}</span>? This action cannot be undone.
             </p>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsDeleteOpen(false)}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteTask}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+                className="rounded-xl bg-destructive px-4 py-2.5 text-sm font-semibold text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
               >
                 Yes, Delete
               </button>

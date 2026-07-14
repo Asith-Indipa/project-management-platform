@@ -104,10 +104,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 px-4 py-12 dark:from-zinc-950 dark:via-purple-950 dark:to-zinc-900">
-      <div className="w-full max-w-md rounded-2xl bg-white/90 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-900/90 dark:border dark:border-zinc-800">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12">
+      <div className="w-full max-w-md rounded-2xl glass-card p-8">
         <div className="flex flex-col items-center mb-8">
-          <h2 className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-pink-400">
+          <h2 className="text-3xl font-extrabold tracking-tight text-primary">
             WorkSync
           </h2>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -125,7 +125,7 @@ export default function LoginPage() {
             }}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition-all ${
               isLogin
-                ? "bg-white text-indigo-600 shadow-sm dark:bg-zinc-700 dark:text-zinc-100"
+                ? "bg-white text-primary shadow-sm dark:bg-zinc-700 dark:text-primary"
                 : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
             }`}
           >
@@ -139,7 +139,7 @@ export default function LoginPage() {
             }}
             className={`flex-1 rounded-md py-2 text-sm font-semibold transition-all ${
               !isLogin
-                ? "bg-white text-indigo-600 shadow-sm dark:bg-zinc-700 dark:text-zinc-100"
+                ? "bg-white text-primary shadow-sm dark:bg-zinc-700 dark:text-primary"
                 : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
             }`}
           >
@@ -164,7 +164,7 @@ export default function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Doe"
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-primary"
               />
               {fieldErrors.name && (
                 <p className="mt-1 text-xs text-red-500">{fieldErrors.name[0]}</p>
@@ -181,7 +181,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-primary"
             />
             {fieldErrors.email && (
               <p className="mt-1 text-xs text-red-500">{fieldErrors.email[0]}</p>
@@ -197,7 +197,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-primary"
             />
             {!isLogin && !fieldErrors.password && (
               <p className="mt-1 text-[10px] text-zinc-400 dark:text-zinc-500">
@@ -211,7 +211,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-sm font-semibold text-white shadow-md transition-all hover:opacity-95 disabled:opacity-50 dark:from-indigo-500 dark:to-pink-500"
+            className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-primary/90 disabled:opacity-50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">

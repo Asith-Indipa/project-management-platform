@@ -85,9 +85,11 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Analytics</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="pb-4">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+          Analytics
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           Real-time performance analytics, milestone logs, and platform operations.
         </p>
       </div>
@@ -95,50 +97,50 @@ export default function AnalyticsPage() {
       {/* METRIC CARD GRID */}
       {user?.role === "ADMIN" && stats && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Total Users</span>
+              <span className="text-sm font-semibold text-muted-foreground">Total Users</span>
               <Users className="h-5 w-5 text-indigo-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.totalUsers}</span>
-              <span className="text-xs text-green-500 font-medium">Registered</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.totalUsers}</span>
+              <span className="text-xs text-emerald-500 font-medium">Registered</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Total Projects</span>
+              <span className="text-sm font-semibold text-muted-foreground">Total Projects</span>
               <Briefcase className="h-5 w-5 text-blue-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.totalProjects}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.totalProjects}</span>
               <div className="flex items-center gap-1.5 text-xs font-semibold">
                 <span className="text-blue-500">{stats.activeProjects} Active</span>
-                <span className="text-zinc-300 dark:text-zinc-700">•</span>
-                <span className="text-green-500">{stats.completedProjects || 0} Completed</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-emerald-500">{stats.completedProjects || 0} Completed</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Completed Tasks</span>
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <span className="text-sm font-semibold text-muted-foreground">Completed Tasks</span>
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.completedTasks}</span>
-              <span className="text-xs text-zinc-500">of {stats.totalTasks} total</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.completedTasks}</span>
+              <span className="text-xs text-muted-foreground">of {stats.totalTasks} total</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Pending Tasks</span>
+              <span className="text-sm font-semibold text-muted-foreground">Pending Tasks</span>
               <Clock className="h-5 w-5 text-amber-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.pendingTasks}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.pendingTasks}</span>
               <span className="text-xs text-amber-500 font-medium">To do/Active</span>
             </div>
           </div>
@@ -147,45 +149,45 @@ export default function AnalyticsPage() {
 
       {user?.role === "PROJECT_MANAGER" && stats && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Managed Projects</span>
+              <span className="text-sm font-semibold text-muted-foreground">Managed Projects</span>
               <Briefcase className="h-5 w-5 text-blue-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.totalProjects}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.totalProjects}</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Team Allocation</span>
+              <span className="text-sm font-semibold text-muted-foreground">Team Allocation</span>
               <Users className="h-5 w-5 text-indigo-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.totalTeamMembers}</span>
-              <span className="text-xs text-zinc-500">assigned users</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.totalTeamMembers}</span>
+              <span className="text-xs text-muted-foreground">assigned users</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Completed Tasks</span>
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <span className="text-sm font-semibold text-muted-foreground">Completed Tasks</span>
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.completedTasks}</span>
-              <span className="text-xs text-zinc-500">of {stats.totalTasks} total</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.completedTasks}</span>
+              <span className="text-xs text-muted-foreground">of {stats.totalTasks} total</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Active Tasks</span>
+              <span className="text-sm font-semibold text-muted-foreground">Active Tasks</span>
               <Clock className="h-5 w-5 text-amber-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.inProgressTasks}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.inProgressTasks}</span>
               <span className="text-xs text-amber-500 font-medium">In Progress</span>
             </div>
           </div>
@@ -194,45 +196,45 @@ export default function AnalyticsPage() {
 
       {user?.role === "TEAM_MEMBER" && stats && (
         <div className="grid gap-6 sm:grid-cols-3">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Allocated Tasks</span>
+              <span className="text-sm font-semibold text-muted-foreground">Allocated Tasks</span>
               <ListTodo className="h-5 w-5 text-indigo-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.assignedTasks}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.assignedTasks}</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Completed Tasks</span>
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <span className="text-sm font-semibold text-muted-foreground">Completed Tasks</span>
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.completedTasks}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.completedTasks}</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Pending Tasks</span>
+              <span className="text-sm font-semibold text-muted-foreground">Pending Tasks</span>
               <Clock className="h-5 w-5 text-amber-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tight">{stats.pendingTasks}</span>
+              <span className="text-3xl font-bold tracking-tight text-foreground">{stats.pendingTasks}</span>
             </div>
           </div>
         </div>
       )}
 
       {/* METRIC VISUALIZATIONS SECTION */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-3">
         {/* Task Completion Progress Meter */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex flex-col justify-between min-h-[300px]">
+        <div className="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between min-h-[300px] shadow-sm">
           <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Task Completion Rate</h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Ratio of done tasks relative to assigned scope.</p>
+            <h3 className="text-lg font-semibold text-foreground tracking-tight">Task Completion Rate</h3>
+            <p className="text-sm text-muted-foreground mt-1">Ratio of done tasks relative to assigned scope.</p>
           </div>
           
           <div className="flex justify-center my-4">
@@ -259,34 +261,34 @@ export default function AnalyticsPage() {
                 </defs>
               </svg>
               <div className="absolute text-center">
-                <span className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{completionRate}%</span>
-                <p className="text-[10px] uppercase font-bold text-zinc-500">Done</p>
+                <span className="text-3xl font-extrabold text-foreground">{completionRate}%</span>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">Done</p>
               </div>
             </div>
           </div>
 
-          <div className="text-center text-xs text-zinc-500">
+          <div className="text-center text-xs text-muted-foreground">
             Keep pushing forward to reach 100% completion!
           </div>
         </div>
 
         {/* ROLE BASED DETAILED METRICS VIEW */}
         {user?.role === "PROJECT_MANAGER" && stats && (
-          <div className="md:col-span-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4">My Managed Projects</h3>
+          <div className="md:col-span-2 rounded-2xl border border-border glass-card p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-foreground mb-4">My Managed Projects</h3>
             <div className="space-y-4">
               {stats.myProjects?.length === 0 ? (
-                <p className="text-sm text-zinc-500">No projects currently managed.</p>
+                <p className="text-sm text-muted-foreground">No projects currently managed.</p>
               ) : (
                 stats.myProjects?.map((proj: any) => (
-                  <div key={proj.id} className="flex items-center justify-between p-4 border border-zinc-100 rounded-lg dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                  <div key={proj.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                     <div>
-                      <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">{proj.name}</h4>
-                      <span className="text-[10px] font-bold text-indigo-500 uppercase">{proj.status}</span>
+                      <h4 className="font-semibold text-sm text-foreground">{proj.name}</h4>
+                      <span className="text-[10px] font-bold text-primary uppercase">{proj.status}</span>
                     </div>
                     <Link
                       href={`/dashboard/projects/${proj.id}`}
-                      className="inline-flex items-center gap-1 text-xs text-indigo-650 font-bold hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:underline"
                     >
                       Inspect <ArrowUpRight className="h-3.5 w-3.5" />
                     </Link>
@@ -298,19 +300,19 @@ export default function AnalyticsPage() {
         )}
 
         {user?.role === "TEAM_MEMBER" && stats && (
-          <div className="md:col-span-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4">Upcoming Deadlines</h3>
+          <div className="md:col-span-2 glass-card rounded-2xl p-6 sm:p-8 border border-border">
+            <h3 className="text-lg font-semibold text-foreground mb-6 tracking-tight">Upcoming Deadlines</h3>
             <div className="space-y-4">
               {stats.upcomingDeadlines?.length === 0 ? (
-                <p className="text-sm text-zinc-500">Hooray! No upcoming deadlines.</p>
+                <p className="text-sm text-muted-foreground">Hooray! No upcoming deadlines.</p>
               ) : (
                 stats.upcomingDeadlines?.map((task: any) => (
-                  <div key={task.id} className="flex items-center justify-between p-4 border border-zinc-100 rounded-lg dark:border-zinc-800">
+                  <div key={task.id} className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-muted/10">
                     <div>
-                      <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">{task.title}</h4>
-                      <span className="text-[10px] text-red-500 font-bold uppercase">Due {new Date(task.dueDate).toLocaleDateString()}</span>
+                      <h4 className="font-semibold text-sm text-foreground">{task.title}</h4>
+                      <span className="text-[10px] text-destructive font-bold uppercase">Due {new Date(task.dueDate).toLocaleDateString()}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
+                    <span className="inline-flex items-center rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20">
                       {task.priority} Priority
                     </span>
                   </div>
@@ -321,23 +323,23 @@ export default function AnalyticsPage() {
         )}
 
         {user?.role === "ADMIN" && (
-          <div className="md:col-span-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4 font-sans">System Status Overview</h3>
-            <div className="space-y-6">
+          <div className="md:col-span-2 glass-card rounded-2xl p-6 sm:p-8 border border-border">
+            <h3 className="text-lg font-semibold text-foreground mb-6 tracking-tight">System Status Overview</h3>
+            <div className="space-y-8">
               {/* Task pending ratio bar */}
               <div>
-                <div className="flex justify-between text-xs font-semibold mb-2">
+                <div className="flex justify-between text-xs font-semibold mb-2 text-foreground">
                   <span>Task Breakdown (Completed vs Pending)</span>
-                  <span>{stats.completedTasks} Done / {stats.pendingTasks} Pending</span>
+                  <span className="text-muted-foreground">{stats.completedTasks} Done / {stats.pendingTasks} Pending</span>
                 </div>
-                <div className="h-3 w-full bg-zinc-100 rounded-full dark:bg-zinc-800 overflow-hidden flex">
+                <div className="h-3 w-full bg-muted rounded-full overflow-hidden flex">
                   <div
-                    className="h-full bg-green-500"
+                    className="h-full bg-emerald-500"
                     style={{ width: `${stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0}%` }}
                     title="Completed"
                   />
                   <div
-                    className="h-full bg-indigo-500"
+                    className="h-full bg-primary"
                     style={{ width: `${stats.totalTasks > 0 ? (stats.pendingTasks / stats.totalTasks) * 100 : 0}%` }}
                     title="Pending"
                   />
@@ -346,13 +348,13 @@ export default function AnalyticsPage() {
 
               {/* Status information panel */}
               <div className="grid grid-cols-2 gap-4 text-xs">
-                <div className="p-3 bg-green-50 border border-green-100 rounded-lg dark:bg-green-950/20 dark:border-green-900/40">
-                  <span className="block font-semibold text-green-700 dark:text-green-400">Database Engine</span>
-                  <span className="text-zinc-500">Connected & Online</span>
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <span className="block font-semibold text-emerald-600 dark:text-emerald-400">Database Engine</span>
+                  <span className="text-muted-foreground">Connected & Online</span>
                 </div>
-                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg dark:bg-blue-950/20 dark:border-blue-900/40">
-                  <span className="block font-semibold text-blue-700 dark:text-blue-400">Platform Core</span>
-                  <span className="text-zinc-500">Running Node v20+</span>
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <span className="block font-semibold text-blue-600 dark:text-blue-400">Platform Core</span>
+                  <span className="text-muted-foreground">Running Node v20+</span>
                 </div>
               </div>
             </div>

@@ -12,10 +12,10 @@ export default function Breadcrumb() {
   const segments = pathname.split("/").filter((item) => item !== "");
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-zinc-500 dark:text-zinc-400">
+    <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground font-medium">
       <Link
         href="/dashboard"
-        className="flex items-center gap-1 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+        className="flex items-center justify-center p-1.5 rounded-md hover:bg-muted hover:text-foreground transition-all duration-200"
       >
         <Home className="h-4 w-4" />
       </Link>
@@ -35,15 +35,15 @@ export default function Breadcrumb() {
 
         return (
           <React.Fragment key={href}>
-            <ChevronRight className="h-4 w-4 text-zinc-300 dark:text-zinc-700" />
+            <ChevronRight className="h-4 w-4 text-border" />
             {isLast ? (
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[150px]">
+              <span className="font-semibold text-foreground truncate max-w-[150px] px-1.5">
                 {label}
               </span>
             ) : (
               <Link
                 href={href}
-                className="hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+                className="px-1.5 py-1 rounded-md hover:bg-muted hover:text-foreground transition-all duration-200"
               >
                 {label}
               </Link>

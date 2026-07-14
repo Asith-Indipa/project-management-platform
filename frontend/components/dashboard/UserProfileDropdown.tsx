@@ -26,26 +26,26 @@ export default function UserProfileDropdown() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background transition-all hover:scale-105"
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 font-bold text-white shadow-md">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-indigo-400 font-bold text-white shadow-sm ring-2 ring-background">
           {user.name.charAt(0).toUpperCase()}
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-zinc-200 bg-white p-2 shadow-xl animate-in fade-in slide-in-from-top-1 duration-150 dark:border-zinc-800 dark:bg-zinc-900 z-50">
-          <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 mb-1">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 truncate">{user.name}</p>
-            <p className="text-xs text-zinc-500 truncate dark:text-zinc-400 capitalize">{user.role.replace("_", " ").toLowerCase()}</p>
+        <div className="absolute right-0 mt-3 w-64 origin-top-right rounded-2xl border border-border glass-card p-2 shadow-xl animate-in fade-in slide-in-from-top-4 duration-200 z-50">
+          <div className="px-3 py-3 border-b border-border mb-1">
+            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate capitalize font-medium">{user.role.replace("_", " ").toLowerCase()}</p>
           </div>
           
           <Link
             href="/dashboard/settings"
             onClick={() => setIsOpen(false)}
-            className="flex w-full items-center rounded-lg px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
+            className="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            <Settings className="mr-2 h-4 w-4 text-zinc-500" />
+            <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
             My Profile & Settings
           </Link>
 
@@ -54,7 +54,7 @@ export default function UserProfileDropdown() {
               setIsOpen(false);
               logout();
             }}
-            className="flex w-full items-center rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors mt-1"
+            className="flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors mt-1"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out

@@ -17,6 +17,7 @@ interface SelectDropdownProps {
   options: Option[];
   placeholder?: string;
   className?: string;
+  buttonClassName?: string;
   error?: string | string[];
   disabled?: boolean;
 }
@@ -28,6 +29,7 @@ export function SelectDropdown({
   options,
   placeholder,
   className,
+  buttonClassName,
   error,
   disabled = false,
 }: SelectDropdownProps) {
@@ -73,7 +75,8 @@ export function SelectDropdown({
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             "w-full flex items-center justify-between rounded-lg border border-zinc-200 bg-white pl-4 pr-10 py-2.5 text-sm outline-none transition-all text-left focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed select-none",
-            errorMessage && "border-red-500 dark:border-red-500 focus:border-red-500 dark:focus:border-red-500"
+            errorMessage && "border-red-500 dark:border-red-500 focus:border-red-500 dark:focus:border-red-500",
+            buttonClassName
           )}
         >
           <span className="truncate text-zinc-900 dark:text-zinc-150">
@@ -85,7 +88,7 @@ export function SelectDropdown({
         </button>
 
         {isOpen && (
-          <div className="absolute left-0 mt-1 w-full max-h-48 overflow-y-auto overflow-x-hidden rounded-lg border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 z-[60] animate-in fade-in slide-in-from-top-1 duration-100 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
+          <div className="absolute left-0 mt-1 w-full max-h-36 overflow-y-auto overflow-x-hidden rounded-lg border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 z-[60] animate-in fade-in slide-in-from-top-1 duration-100 scrollbar-hide">
             {placeholder && (
               <button
                 type="button"
