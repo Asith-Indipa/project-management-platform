@@ -168,20 +168,20 @@ export default function UsersPage() {
     <ProtectedRoute allowedRoles={["ADMIN"]}>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">User Management</h1>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">User Management</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
               Create, edit, or remove system users and manage their global access roles.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => {
                 resetForm();
                 setIsCreateOpen(true);
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-500"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-[1.02]"
             >
               <Plus className="h-4 w-4" /> Add User
             </button>
@@ -203,9 +203,9 @@ export default function UsersPage() {
         )}
 
         {/* Filters Panel */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl border border-border glass-card p-3 shadow-sm relative z-20">
+          <div className="relative w-full sm:max-w-xs group">
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Search by name or email..."
@@ -214,11 +214,11 @@ export default function UsersPage() {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-lg border border-zinc-200 bg-zinc-50 pl-10 pr-4 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950 dark:focus:bg-zinc-950"
+              className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
             />
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 text-zinc-400" />
+          <div className="flex items-center gap-2 w-full sm:w-auto bg-background/50 border border-border rounded-xl px-2">
+            <Filter className="h-4 w-4 text-muted-foreground ml-2 hidden sm:block" />
             <SelectDropdown
               value={roleFilter}
               onChange={(val) => {
@@ -226,6 +226,7 @@ export default function UsersPage() {
                 setCurrentPage(1);
               }}
               className="w-full sm:w-48"
+              buttonClassName="border-0 focus:ring-0 bg-transparent shadow-none"
               options={[
                 { value: "ALL", label: "All Roles" },
                 { value: "ADMIN", label: "Admin" },
@@ -248,35 +249,35 @@ export default function UsersPage() {
             <p className="text-sm text-zinc-500 dark:text-zinc-400">No users found matching your search parameters.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left">
-              <thead className="bg-zinc-50 dark:bg-zinc-950">
+          <div className="overflow-x-auto rounded-2xl border border-border glass-card">
+            <table className="min-w-full divide-y divide-border text-left">
+              <thead className="bg-muted/30">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Name</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Email</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Role</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <tbody className="divide-y divide-border/50">
                 {paginatedUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-zinc-50/55 dark:hover:bg-zinc-800/40">
+                  <tr key={user.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted font-bold text-foreground border border-border">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{user.name}</span>
+                        <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{user.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground font-medium">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
                         user.role === "ADMIN"
-                          ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                          ? "bg-red-500/10 text-red-600 dark:text-red-400"
                           : user.role === "PROJECT_MANAGER"
-                          ? "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400"
-                          : "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                          : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
                       }`}>
                         {user.role.replace("_", " ")}
                       </span>
@@ -284,14 +285,14 @@ export default function UsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right space-x-2">
                       <button
                         onClick={() => openEditModal(user)}
-                        className="inline-flex items-center rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                        className="inline-flex items-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
                       {user.role !== "ADMIN" && user.id !== currentUser?.id && (
                         <button
                           onClick={() => openDeleteModal(user)}
-                          className="inline-flex items-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+                          className="inline-flex items-center rounded-lg p-2 text-destructive/70 hover:bg-destructive/10 hover:text-destructive transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -332,42 +333,42 @@ export default function UsersPage() {
         {/* CREATE MODAL */}
         {isCreateOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCreateOpen(false)} />
-            <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Create New User</h2>
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsCreateOpen(false)} />
+            <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground mb-6">Create New User</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Full Name</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Full Name</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
                   />
-                  {formErrors.name && <p className="mt-1 text-xs text-red-500">{formErrors.name[0]}</p>}
+                  {formErrors.name && <p className="mt-1 text-xs text-destructive">{formErrors.name[0]}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email Address</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
                   />
-                  {formErrors.email && <p className="mt-1 text-xs text-red-500">{formErrors.email[0]}</p>}
+                  {formErrors.email && <p className="mt-1 text-xs text-destructive">{formErrors.email[0]}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Password</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Password</label>
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
                   />
-                  {formErrors.password && <p className="mt-1 text-xs text-red-500">{formErrors.password[0]}</p>}
+                  {formErrors.password && <p className="mt-1 text-xs text-destructive">{formErrors.password[0]}</p>}
                 </div>
                   <SelectDropdown
                     label="Role"
@@ -380,19 +381,19 @@ export default function UsersPage() {
                     ]}
                     error={formErrors.role}
                   />
-                <div className="flex justify-end gap-2 mt-6">
+                <div className="flex justify-end gap-3 mt-8">
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
                   >
-                    Create
+                    Create User
                   </button>
                 </div>
               </form>
@@ -403,31 +404,31 @@ export default function UsersPage() {
         {/* EDIT MODAL */}
         {isEditOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditOpen(false)} />
-            <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Edit User Details</h2>
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsEditOpen(false)} />
+            <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground mb-6">Edit User Details</h2>
               <form onSubmit={handleEdit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Full Name</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Full Name</label>
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
                   />
-                  {formErrors.name && <p className="mt-1 text-xs text-red-500">{formErrors.name[0]}</p>}
+                  {formErrors.name && <p className="mt-1 text-xs text-destructive">{formErrors.name[0]}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email Address</label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background/50 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
                   />
-                  {formErrors.email && <p className="mt-1 text-xs text-red-500">{formErrors.email[0]}</p>}
+                  {formErrors.email && <p className="mt-1 text-xs text-destructive">{formErrors.email[0]}</p>}
                 </div>
                   <SelectDropdown
                     label="Role"
@@ -440,17 +441,17 @@ export default function UsersPage() {
                     ]}
                     error={formErrors.role}
                   />
-                <div className="flex justify-end gap-2 mt-6">
+                <div className="flex justify-end gap-3 mt-8">
                   <button
                     type="button"
                     onClick={() => setIsEditOpen(false)}
-                    className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
                   >
                     Save Changes
                   </button>
@@ -463,26 +464,26 @@ export default function UsersPage() {
         {/* DELETE CONFIRMATION DIALOG */}
         {isDeleteOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteOpen(false)} />
-            <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-              <div className="flex items-center gap-3 text-red-600 dark:text-red-400 mb-3">
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsDeleteOpen(false)} />
+            <div className="relative w-full max-w-sm rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-3 text-destructive mb-3">
                 <AlertTriangle className="h-6 w-6" />
-                <h2 className="text-lg font-bold">Confirm Deletion</h2>
+                <h2 className="text-lg font-bold tracking-tight">Confirm Deletion</h2>
               </div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-                Are you sure you want to delete user <span className="font-semibold text-zinc-900 dark:text-zinc-50">{selectedUser?.name}</span>? This action cannot be undone and will affect any projects or tasks associated with this user.
+              <p className="text-sm text-muted-foreground mb-8">
+                Are you sure you want to delete user <span className="font-semibold text-foreground">{selectedUser?.name}</span>? This action cannot be undone and will affect any projects or tasks associated with this user.
               </p>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsDeleteOpen(false)}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+                  className="rounded-xl bg-destructive px-5 py-2.5 text-sm font-semibold text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-sm"
                 >
                   Yes, Delete
                 </button>

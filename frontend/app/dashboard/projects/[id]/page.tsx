@@ -113,6 +113,16 @@ export default function ProjectDetailsPage({
   const [fetchingManagers, setFetchingManagers] = useState(false);
   const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false);
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   const openEditProjectModal = () => {
     if (!project) return;
     setEditName(project.name);
@@ -141,10 +151,11 @@ export default function ProjectDetailsPage({
     fetchProjectDetails();
   }, [projectId]);
 
-  // Load global users if admin
+  // Load global users if admin or project manager
   useEffect(() => {
-    if (isAssignMemberOpen && currentUser?.role === "ADMIN") {
-      api.get("/admin/users")
+    if (isAssignMemberOpen) {
+      const url = currentUser?.role === "ADMIN" ? "/admin/users" : "/users";
+      api.get(url)
         .then((res) => {
           const list = Array.isArray(res.data) ? res.data : res.data.users || [];
           setGlobalUsers(list);
@@ -175,7 +186,7 @@ export default function ProjectDetailsPage({
     setError(null);
     setSuccess(null);
 
-    const targetId = currentUser?.role === "ADMIN" ? selectedUserId : manualUserId;
+    const targetId = selectedUserId;
 
     if (!targetId) {
       setError("Please specify a user to assign.");
@@ -391,42 +402,42 @@ export default function ProjectDetailsPage({
   return (
     <div className="space-y-8">
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/projects"
-            className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-200 bg-white text-zinc-500 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-border glass-card text-muted-foreground hover:text-foreground transition-colors shadow-sm hover:shadow-md"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{project.name}</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Managed by {project.manager?.name}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">{project.name}</h1>
+            <p className="text-sm text-muted-foreground">Managed by {project.manager?.name}</p>
           </div>
         </div>
         {canManage && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setIsDeleteProjectOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition-all hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/45"
+              className="inline-flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive shadow-sm transition-all hover:bg-destructive/20"
             >
               <Trash2 className="h-4 w-4" /> Delete Project
             </button>
             <button
               onClick={openEditProjectModal}
-              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="inline-flex items-center gap-2 rounded-xl border border-border glass-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground"
             >
               <Edit className="h-4 w-4" /> Edit Project
             </button>
             <button
               onClick={() => setIsAssignMemberOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="inline-flex items-center gap-2 rounded-xl border border-border glass-card px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground"
             >
               <UserPlus className="h-4 w-4" /> Add Member
             </button>
             <button
               onClick={() => setIsCreateTaskOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-500"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" /> Add Task
             </button>
@@ -436,54 +447,58 @@ export default function ProjectDetailsPage({
 
       {/* Success/Error Alerts */}
       {success && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700 dark:bg-green-950/20 dark:text-green-400 flex justify-between items-center">
+        <div className="rounded-xl bg-emerald-500/10 p-4 text-sm font-medium text-emerald-600 dark:text-emerald-400 flex justify-between items-center border border-emerald-500/20 shadow-sm animate-in fade-in duration-300">
           <span>{success}</span>
-          <button onClick={() => setSuccess(null)} className="text-green-500 hover:text-green-700">×</button>
+          <button onClick={() => setSuccess(null)} className="text-emerald-500 hover:text-emerald-700">×</button>
         </div>
       )}
       {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-sm font-medium text-red-700 dark:bg-red-950/20 dark:text-red-400 flex justify-between items-center">
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm font-medium text-destructive flex justify-between items-center border border-destructive/20 shadow-sm animate-in fade-in duration-300">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">×</button>
+          <button onClick={() => setError(null)} className="text-destructive hover:text-destructive/80">×</button>
         </div>
       )}
 
       {/* Project Overview Card */}
       <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-lg font-bold mb-2">Description</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        <div className="md:col-span-2 rounded-2xl border border-border glass-card p-6 shadow-sm">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground mb-3">Description</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {project.description || "No description provided for this project."}
           </p>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
-          <h2 className="text-lg font-bold">Metadata</h2>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-500 dark:text-zinc-400">Status</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">{project.status}</span>
-          </div>
+        <div className="rounded-2xl border border-border glass-card p-6 shadow-sm space-y-4 flex flex-col justify-between">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-foreground mb-4">Metadata</h2>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground font-medium">Status</span>
+                <span className="font-bold text-primary">{project.status}</span>
+              </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-500 dark:text-zinc-400">Start Date</span>
-            <span className="font-semibold">{formatDate(project.startDate)}</span>
-          </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground font-medium">Start Date</span>
+                <span className="font-semibold text-foreground">{formatDate(project.startDate)}</span>
+              </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-500 dark:text-zinc-400">End Date</span>
-            <span className="font-semibold text-red-500 dark:text-red-400">{formatDate(project.endDate)}</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground font-medium">End Date</span>
+                <span className="font-semibold text-destructive">{formatDate(project.endDate)}</span>
+              </div>
+            </div>
           </div>
 
           {/* Progress */}
-          <div className="pt-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+          <div className="pt-4 border-t border-border/50">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground mb-2">
               <span>Overall Progress</span>
-              <span>{progressPercent}%</span>
+              <span className="text-primary">{progressPercent}%</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
               <div
-                className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400"
+                className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-400 transition-all duration-1000 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -492,14 +507,14 @@ export default function ProjectDetailsPage({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800">
+      <div className="border-b border-border/60">
         <nav className="flex space-x-8">
           <button
             onClick={() => setActiveTab("tasks")}
             className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
               activeTab === "tasks"
-                ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-300"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -510,8 +525,8 @@ export default function ProjectDetailsPage({
             onClick={() => setActiveTab("members")}
             className={`border-b-2 py-4 px-1 text-sm font-semibold transition-all ${
               activeTab === "members"
-                ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-300"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -523,10 +538,10 @@ export default function ProjectDetailsPage({
 
       {/* TAB CONTENT: TASKS */}
       {activeTab === "tasks" && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {project.tasks.length === 0 ? (
-            <div className="rounded-xl border border-zinc-200 bg-white py-12 text-center dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No tasks created for this project yet.</p>
+            <div className="rounded-2xl border border-border glass-card py-12 text-center shadow-sm">
+              <p className="text-sm text-muted-foreground">No tasks created for this project yet.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
@@ -534,27 +549,31 @@ export default function ProjectDetailsPage({
                 <Link
                   key={task.id}
                   href={`/dashboard/tasks/${task.id}`}
-                  className="block rounded-xl border border-zinc-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-indigo-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 transition-all cursor-pointer"
+                  className="block rounded-2xl border border-border glass-card p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{task.title}</h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">{task.description || "No description."}</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">{task.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">{task.description || "No description."}</p>
                     </div>
-                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${getPriorityColor(task.priority)}`}>
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      task.priority === "HIGH" ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                      : task.priority === "MEDIUM" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    }`}>
                       {task.priority}
                     </span>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                    <div className="flex items-center gap-1">
+                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground font-medium border-t border-border/50 pt-3">
+                    <div className="flex items-center gap-1.5">
                       {getStatusIcon(task.status)}
                       <span className="capitalize">{task.status.toLowerCase().replace("_", " ")}</span>
-                      <span className="ml-1 font-bold text-zinc-700 dark:text-zinc-300">({task.progress}%)</span>
+                      <span className="ml-1 font-bold text-foreground">({task.progress}%)</span>
                     </div>
 
                     <div>
-                      <span>Assignee: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{task.assignedTo?.name || "Unassigned"}</span></span>
+                      <span>Assignee: <span className="font-semibold text-foreground">{task.assignedTo?.name || "Unassigned"}</span></span>
                     </div>
                   </div>
                 </Link>
@@ -566,31 +585,31 @@ export default function ProjectDetailsPage({
 
       {/* TAB CONTENT: MEMBERS */}
       {activeTab === "members" && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {project.members.length === 0 ? (
-            <div className="rounded-xl border border-zinc-200 bg-white py-12 text-center dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">No members assigned to this project.</p>
+            <div className="rounded-2xl border border-border glass-card py-12 text-center shadow-sm">
+              <p className="text-sm text-muted-foreground">No members assigned to this project.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-              <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left">
-                <thead className="bg-zinc-50 dark:bg-zinc-950">
+            <div className="overflow-x-auto rounded-2xl border border-border glass-card shadow-sm">
+              <table className="min-w-full divide-y divide-border/50 text-left">
+                <thead className="bg-muted/30">
                   <tr>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Name</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Email</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Role</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Name</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</th>
+                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
                     {canManage && (
-                      <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Actions</th>
+                      <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Actions</th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-border/50">
                   {project.members.map((member) => (
-                    <tr key={member.userId} className="hover:bg-zinc-50/55 dark:hover:bg-zinc-800/40">
-                      <td className="px-6 py-4 whitespace-nowrap font-semibold text-zinc-900 dark:text-zinc-50">{member.user.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">{member.user.email}</td>
+                    <tr key={member.userId} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">{member.user.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{member.user.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/30 dark:text-blue-400">
+                        <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary border border-primary/20">
                           {member.user.role.replace("_", " ")}
                         </span>
                       </td>
@@ -598,7 +617,8 @@ export default function ProjectDetailsPage({
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           <button
                             onClick={() => openDeleteMemberModal(member)}
-                            className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
+                            className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
+                            title="Remove Member"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -616,50 +636,36 @@ export default function ProjectDetailsPage({
       {/* ASSIGN MEMBER MODAL */}
       {isAssignMemberOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAssignMemberOpen(false)} />
-          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Assign Project Member</h2>
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsAssignMemberOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mb-4">Assign Project Member</h2>
             <form onSubmit={handleAssignMember} className="space-y-4">
-              {currentUser?.role === "ADMIN" ? (
-                <SelectDropdown
-                  label="Select Member"
-                  value={selectedUserId}
-                  onChange={setSelectedUserId}
-                  placeholder="Choose User"
-                  options={globalUsers
-                    .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
-                    .map((gu) => ({
-                      value: gu.id,
-                      label: `${gu.name} (${gu.role.replace("_", " ").toLowerCase()})`
-                    }))}
-                />
-              ) : (
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">User ID</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Enter team member ID..."
-                    value={manualUserId}
-                    onChange={(e) => setManualUserId(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
-                  />
-                  <p className="mt-1.5 text-xs text-zinc-400">For security, please enter the unique identifier of the user to assign.</p>
-                </div>
-              )}
+              <SelectDropdown
+                label="Select Member"
+                value={selectedUserId}
+                onChange={setSelectedUserId}
+                placeholder="Choose User"
+                options={globalUsers
+                  .filter((gu) => !project.members.some((pm) => pm.userId === gu.id))
+                  .filter((gu) => currentUser?.role !== "PROJECT_MANAGER" || gu.role === "TEAM_MEMBER")
+                  .map((gu) => ({
+                    value: gu.id,
+                    label: `${gu.name} (${gu.role.replace("_", " ").toLowerCase()})`
+                  }))}
+              />
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsAssignMemberOpen(false)}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={assigningMember}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-all"
                 >
                   {assigningMember ? "Assigning..." : "Assign"}
                 </button>
@@ -672,33 +678,33 @@ export default function ProjectDetailsPage({
       {/* CREATE TASK MODAL */}
       {isCreateTaskOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCreateTaskOpen(false)} />
-          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Create New Task</h2>
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsCreateTaskOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mb-4">Create New Task</h2>
             <form onSubmit={handleCreateTask} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Task Title</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Task Title</label>
                 <input
                   type="text"
                   required
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder="Task title..."
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
-                {taskErrors.title && <p className="mt-1 text-xs text-red-500">{taskErrors.title[0]}</p>}
+                {taskErrors.title && <p className="mt-1 text-xs text-destructive">{taskErrors.title[0]}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</label>
                 <textarea
                   value={taskDesc}
                   onChange={(e) => setTaskDesc(e.target.value)}
                   placeholder="Task details..."
                   rows={3}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none dark:border-zinc-805 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
                 />
-                {taskErrors.description && <p className="mt-1 text-xs text-red-500">{taskErrors.description[0]}</p>}
+                {taskErrors.description && <p className="mt-1 text-xs text-destructive">{taskErrors.description[0]}</p>}
               </div>
 
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -713,14 +719,14 @@ export default function ProjectDetailsPage({
                   ]}
                 />
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Due Date</label>
                   <input
                     type="date"
-                    min={project?.startDate ? new Date(project.startDate).toISOString().split("T")[0] : undefined}
+                    min={project?.startDate && new Date(project.startDate).toISOString().split("T")[0] > todayStr ? new Date(project.startDate).toISOString().split("T")[0] : todayStr}
                     max={project?.endDate ? new Date(project.endDate).toISOString().split("T")[0] : undefined}
                     value={taskDueDate}
                     onChange={(e) => setTaskDueDate(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
                 </div>
               </div>
@@ -730,24 +736,32 @@ export default function ProjectDetailsPage({
                 value={taskAssigneeId}
                 onChange={setTaskAssigneeId}
                 placeholder="Unassigned"
-                options={project.members.map((m) => ({
-                  value: m.userId,
-                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
-                }))}
+                options={[
+                  ...(project.manager ? [{
+                    value: project.manager.id,
+                    label: `${project.manager.name} (project manager) ${project.manager.id === currentUser?.id ? "[You]" : ""}`
+                  }] : []),
+                  ...project.members
+                    .filter((m) => m.userId !== project.manager?.id)
+                    .map((m) => ({
+                      value: m.userId,
+                      label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                    }))
+                ]}
               />
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
                   type="button"
                   onClick={() => setIsCreateTaskOpen(false)}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingTask}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-all"
                 >
                   {creatingTask ? "Creating..." : "Create Task"}
                 </button>
@@ -764,22 +778,22 @@ export default function ProjectDetailsPage({
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteMemberOpen(false)} />
-            <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsDeleteMemberOpen(false)} />
+            <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
               {hasAssignedTasks ? (
                 <>
-                  <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-3">
+                  <div className="flex items-center gap-3 text-amber-500 mb-4">
                     <AlertCircle className="h-6 w-6" />
-                    <h2 className="text-lg font-bold">Unassign Tasks First</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">Unassign Tasks First</h2>
                   </div>
-                  <p className="text-sm text-zinc-650 dark:text-zinc-400 mb-4">
-                    Before removing <span className="font-semibold text-zinc-900 dark:text-zinc-50">{memberToRemove.user.name}</span>, you must unassign them from the following tasks in this project:
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Before removing <span className="font-semibold text-foreground">{memberToRemove.user.name}</span>, you must unassign them from the following tasks in this project:
                   </p>
                   
-                  <div className="space-y-2.5 max-h-48 overflow-y-auto mb-6 pr-1">
+                  <div className="space-y-2 max-h-48 overflow-y-auto mb-6 pr-1 custom-scrollbar">
                     {assignedTasks.map((task) => (
-                      <div key={task.id} className="flex items-center justify-between p-3 rounded-lg border border-zinc-150 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/40 text-xs">
-                        <span className="font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[180px]">{task.title}</span>
+                      <div key={task.id} className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/30 text-xs">
+                        <span className="font-medium text-foreground truncate max-w-[180px]">{task.title}</span>
                         <div className="flex gap-2">
                           <button
                             onClick={async () => {
@@ -790,7 +804,7 @@ export default function ProjectDetailsPage({
                                 alert("Failed to unassign: " + (err.response?.data?.error || err.message));
                               }
                             }}
-                            className="rounded bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/80 dark:text-indigo-400 transition-all"
+                            className="rounded-lg bg-primary/10 hover:bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary transition-all"
                           >
                             Unassign
                           </button>
@@ -803,7 +817,7 @@ export default function ProjectDetailsPage({
                     <button
                       type="button"
                       onClick={() => setIsDeleteMemberOpen(false)}
-                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                     >
                       Close
                     </button>
@@ -811,24 +825,24 @@ export default function ProjectDetailsPage({
                 </>
               ) : (
                 <>
-                  <div className="flex items-center gap-3 text-red-650 dark:text-red-400 mb-3">
+                  <div className="flex items-center gap-3 text-destructive mb-4">
                     <AlertCircle className="h-6 w-6" />
-                    <h2 className="text-lg font-bold">Remove Member</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">Remove Member</h2>
                   </div>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-                    Are you sure you want to remove <span className="font-semibold text-zinc-900 dark:text-zinc-50">{memberToRemove.user.name}</span> from the project? This action cannot be undone.
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Are you sure you want to remove <span className="font-semibold text-foreground">{memberToRemove.user.name}</span> from the project? This action cannot be undone.
                   </p>
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setIsDeleteMemberOpen(false)}
-                      className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleRemoveMember}
-                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+                      className="rounded-xl bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow-sm hover:bg-destructive/90 transition-all"
                     >
                       Yes, Remove
                     </button>
@@ -843,54 +857,56 @@ export default function ProjectDetailsPage({
       {/* EDIT PROJECT MODAL */}
       {isEditProjectOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsEditProjectOpen(false)} />
-          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">Edit Project Details</h2>
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsEditProjectOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mb-4">Edit Project Details</h2>
             <form onSubmit={handleEditProject} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Project Name</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Project Name</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
-                {editErrors.name && <p className="mt-1 text-xs text-red-500">{editErrors.name[0]}</p>}
+                {editErrors.name && <p className="mt-1 text-xs text-destructive">{editErrors.name[0]}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</label>
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none"
                 />
-                {editErrors.description && <p className="mt-1 text-xs text-red-500">{editErrors.description[0]}</p>}
+                {editErrors.description && <p className="mt-1 text-xs text-destructive">{editErrors.description[0]}</p>}
               </div>
 
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Start Date</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Start Date</label>
                   <input
                     type="date"
                     value={editStartDate}
+                    min={todayStr}
                     onChange={(e) => setEditStartDate(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
-                  {editErrors.startDate && <p className="mt-1 text-xs text-red-500">{editErrors.startDate[0]}</p>}
+                  {editErrors.startDate && <p className="mt-1 text-xs text-destructive">{editErrors.startDate[0]}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">End Date</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">End Date</label>
                   <input
                     type="date"
                     value={editEndDate}
+                    min={editStartDate || todayStr}
                     onChange={(e) => setEditEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                   />
-                  {editErrors.endDate && <p className="mt-1 text-xs text-red-500">{editErrors.endDate[0]}</p>}
+                  {editErrors.endDate && <p className="mt-1 text-xs text-destructive">{editErrors.endDate[0]}</p>}
                 </div>
               </div>
 
@@ -915,8 +931,8 @@ export default function ProjectDetailsPage({
                   <div>
                     {fetchingManagers ? (
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project Manager</label>
-                        <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Manager</label>
+                        <div className="h-10 w-full animate-pulse rounded-xl bg-muted"></div>
                       </div>
                     ) : (
                       <SelectDropdown
@@ -938,14 +954,14 @@ export default function ProjectDetailsPage({
                 <button
                   type="button"
                   onClick={() => setIsEditProjectOpen(false)}
-                  className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updatingProject}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-all"
                 >
                   {updatingProject ? "Saving..." : "Save Changes"}
                 </button>
@@ -958,18 +974,18 @@ export default function ProjectDetailsPage({
       {/* DELETE PROJECT MODAL */}
       {isDeleteProjectOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsDeleteProjectOpen(false)} />
-          <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150 dark:bg-zinc-900 dark:border dark:border-zinc-800">
-            <h2 className="text-xl font-bold text-red-650 dark:text-red-400 mb-2">Delete Project?</h2>
-            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">
-              Are you sure you want to delete <span className="font-semibold text-zinc-850 dark:text-zinc-100">"{project?.name}"</span>? 
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsDeleteProjectOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border glass-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-semibold tracking-tight text-destructive mb-2">Delete Project?</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Are you sure you want to delete <span className="font-semibold text-foreground">"{project?.name}"</span>? 
               This will permanently delete all associated tasks, activities, and member relationships. This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsDeleteProjectOpen(false)}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               >
                 Cancel
               </button>
@@ -977,7 +993,7 @@ export default function ProjectDetailsPage({
                 type="button"
                 onClick={handleDeleteProject}
                 disabled={updatingProject}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-50"
+                className="rounded-xl bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground shadow-sm hover:bg-destructive/90 transition-all disabled:opacity-50"
               >
                 {updatingProject ? "Deleting..." : "Permanently Delete"}
               </button>

@@ -18,8 +18,29 @@ export const logActivity = async (description: string, userId: number, projectId
   }
 };
 
-export const getSystemActivities = async () => {
+export const getSystemActivities = async (userId: number, role: string) => {
+  let whereClause: any = {};
+
+  if (role === "PROJECT_MANAGER") {
+    whereClause = {
+      project: {
+        managerId: userId,
+      },
+    };
+  } else if (role === "TEAM_MEMBER") {
+    whereClause = {
+      project: {
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+    };
+  }
+
   return prisma.activity.findMany({
+    where: whereClause,
     orderBy: { createdAt: "desc" },
     take: 20,
     include: {
@@ -63,7 +84,14 @@ export const sendNotification = async (message: string, userId: number) => {
   }
 };
 
-export const getMyNotifications = async (userId: number) => {
+export const getMyNotifications = async (userId: number, role: string) => {
+  if (role === "ADMIN") {
+    return prisma.notification.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+  }
+
   return prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -71,7 +99,7 @@ export const getMyNotifications = async (userId: number) => {
   });
 };
 
-export const markAsRead = async (notificationId: number, userId: number) => {
+export const markAsRead = async (notificationId: number, userId: number, role: string) => {
   const notification = await prisma.notification.findUnique({
     where: { id: notificationId },
   });
@@ -80,7 +108,7 @@ export const markAsRead = async (notificationId: number, userId: number) => {
     throw new Error("Notification not found");
   }
 
-  if (notification.userId !== userId) {
+  if (role !== "ADMIN" && notification.userId !== userId) {
     throw new Error("Access denied. You cannot read this notification.");
   }
 
@@ -132,6 +160,7 @@ export const checkAndUpdateProjectCompletion = async (projectId: number) => {
         await logActivity(`automatically marked Project "${updatedProject.name}" as COMPLETED because all tasks are finished`, project.managerId, projectId);
 
         const members = await prisma.projectMember.findMany({ where: { projectId } });
+        await sendNotification(`Project "${updatedProject.name}" has been automatically completed as all tasks are 100% finished!`, project.managerId);
         for (const m of members) {
           await sendNotification(`Project "${updatedProject.name}" has been automatically completed as all tasks are 100% finished!`, m.userId);
         }
@@ -146,6 +175,7 @@ export const checkAndUpdateProjectCompletion = async (projectId: number) => {
         await logActivity(`automatically marked Project "${updatedProject.name}" as PLANNING because all tasks are in TODO state`, project.managerId, projectId);
 
         const members = await prisma.projectMember.findMany({ where: { projectId } });
+        await sendNotification(`Project "${updatedProject.name}" status reverted to PLANNING because all tasks are in TODO state.`, project.managerId);
         for (const m of members) {
           await sendNotification(`Project "${updatedProject.name}" status reverted to PLANNING because all tasks are in TODO state.`, m.userId);
         }
@@ -160,6 +190,7 @@ export const checkAndUpdateProjectCompletion = async (projectId: number) => {
         await logActivity(`automatically marked Project "${updatedProject.name}" as ACTIVE because some tasks have started`, project.managerId, projectId);
 
         const members = await prisma.projectMember.findMany({ where: { projectId } });
+        await sendNotification(`Project "${updatedProject.name}" status changed to ACTIVE because tasks have started.`, project.managerId);
         for (const m of members) {
           await sendNotification(`Project "${updatedProject.name}" status changed to ACTIVE because tasks have started.`, m.userId);
         }
@@ -168,4 +199,15 @@ export const checkAndUpdateProjectCompletion = async (projectId: number) => {
   } catch (error) {
     console.error("checkAndUpdateProjectCompletion failed:", error);
   }
+};
+
+export const getUsers = async () => {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    },
+  });
 };

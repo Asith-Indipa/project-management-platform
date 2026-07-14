@@ -63,6 +63,16 @@ export default function TaskDetailsPage({
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   const fetchTaskDetails = async () => {
     try {
       setLoading(true);
@@ -165,7 +175,7 @@ export default function TaskDetailsPage({
       }
 
       setSuccess("Task updated successfully!");
-      router.push("/dashboard/tasks");
+      router.back();
     } catch (err: any) {
       const errData = err.response?.data;
       if (errData?.errors) {
@@ -199,73 +209,76 @@ export default function TaskDetailsPage({
   if (!task) return null;
 
   const canManage = currentUser?.role === "ADMIN" || currentUser?.role === "PROJECT_MANAGER";
+  const isMyTask = task.assignedTo?.id === currentUser?.id;
+  const canEditStatus = canManage || isMyTask;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
       {/* Back and Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard/tasks"
-          className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-200 bg-white text-zinc-500 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+        <button
+          onClick={() => router.back()}
+          type="button"
+          className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-border glass-card text-muted-foreground hover:text-foreground transition-colors shadow-sm hover:shadow-md"
         >
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Task Details</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Task Details</h1>
+          <p className="text-sm text-muted-foreground">
             {canManage ? "Update details and manage assignees" : "Update task execution progress"}
           </p>
         </div>
       </div>
 
       {success && (
-        <div className="rounded-lg bg-green-50 p-4 text-sm font-medium text-green-700 dark:bg-green-950/20 dark:text-green-400">
+        <div className="rounded-xl bg-emerald-500/10 p-4 text-sm font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
           {success}
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-sm font-medium text-red-700 dark:bg-red-950/20 dark:text-red-400">
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm font-medium text-destructive border border-destructive/20 shadow-sm">
           {error}
         </div>
       )}
 
       {/* Main card */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Task Title</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Task Title</label>
             <input
               type="text"
               required
               disabled={!canManage}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:bg-muted/50 disabled:text-muted-foreground"
             />
-            {fieldErrors.title && <p className="mt-1 text-xs text-red-500">{fieldErrors.title[0]}</p>}
+            {fieldErrors.title && <p className="mt-1 text-xs text-destructive">{fieldErrors.title[0]}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</label>
             <textarea
               disabled={!canManage}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:bg-muted/50 disabled:text-muted-foreground resize-none"
             />
-            {fieldErrors.description && <p className="mt-1 text-xs text-red-500">{fieldErrors.description[0]}</p>}
+            {fieldErrors.description && <p className="mt-1 text-xs text-destructive">{fieldErrors.description[0]}</p>}
           </div>
 
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Parent Project</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Parent Project</label>
               <input
                 type="text"
                 disabled
                 value={task.projectName || "Unknown project"}
-                className="w-full rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none dark:border-zinc-805 dark:bg-zinc-950 text-zinc-500"
+                className="w-full rounded-xl border border-border bg-muted/50 px-4 py-2.5 text-sm outline-none text-muted-foreground"
               />
             </div>
 
@@ -275,10 +288,16 @@ export default function TaskDetailsPage({
               value={assignedToId}
               onChange={setAssignedToId}
               placeholder="Select Member"
-              options={projectMembers.map((m) => ({
-                value: m.userId,
-                label: m.user.name
-              }))}
+              options={[
+                ...(selectedProject?.manager ? [{
+                  value: selectedProject.manager.id,
+                  label: `${selectedProject.manager.name} (project manager)`
+                }] : []),
+                ...projectMembers.map((m) => ({
+                  value: m.userId,
+                  label: `${m.user.name} (${m.user.role.replace("_", " ").toLowerCase()})`
+                }))
+              ]}
             />
           </div>
 
@@ -296,23 +315,24 @@ export default function TaskDetailsPage({
             />
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Due Date</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Due Date</label>
               <input
                 type="date"
                 disabled={!canManage}
-                min={selectedProject?.startDate ? new Date(selectedProject.startDate).toISOString().split("T")[0] : undefined}
+                min={selectedProject?.startDate && new Date(selectedProject.startDate).toISOString().split("T")[0] > todayStr ? new Date(selectedProject.startDate).toISOString().split("T")[0] : todayStr}
                 max={selectedProject?.endDate ? new Date(selectedProject.endDate).toISOString().split("T")[0] : undefined}
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none disabled:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:disabled:bg-zinc-900"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 disabled:bg-muted/50 disabled:text-muted-foreground"
               />
             </div>
           </div>
 
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 border-t border-zinc-150 pt-4 dark:border-zinc-800">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 border-t border-border/50 pt-6">
             <SelectDropdown
               label="Task Status"
               value={status}
+              disabled={!canEditStatus}
               onChange={(val) => handleStatusChange(val as any)}
               options={[
                 { value: "TODO", label: "To Do" },
@@ -322,9 +342,9 @@ export default function TaskDetailsPage({
             />
 
             <div>
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
                 <span>Task Progress</span>
-                <span className="font-bold text-indigo-600 dark:text-indigo-400">{progress}%</span>
+                <span className="font-bold text-primary">{progress}%</span>
               </div>
               <div className="flex items-center gap-3 h-10">
                 <input
@@ -332,28 +352,37 @@ export default function TaskDetailsPage({
                   min="0"
                   max="100"
                   step="5"
+                  disabled={!canEditStatus}
                   value={progress}
                   onChange={(e) => handleProgressChange(parseInt(e.target.value, 10))}
-                  className="w-full accent-indigo-600 h-1.5 rounded bg-zinc-100 dark:bg-zinc-800 outline-none"
+                  className="w-full accent-primary h-1.5 rounded bg-muted outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-6 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          {!canEditStatus && (
+            <div className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              This task is assigned to another team member. You can only view it.
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 mt-6 border-t border-border/50 pt-6">
             <Link
               href="/dashboard/tasks"
-              className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
             >
               Back
             </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
+            {canEditStatus && (
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            )}
           </div>
         </form>
       </div>

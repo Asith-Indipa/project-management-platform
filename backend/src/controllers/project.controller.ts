@@ -15,7 +15,7 @@ export const createProject = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    const result = await projectService.createProject(req.body);
+    const result = await projectService.createProject(req.body, req.user!.userId);
     res.status(201).json({
       success: true,
       project: result,

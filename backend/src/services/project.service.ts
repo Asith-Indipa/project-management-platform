@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma";
 import { Role } from "@prisma/client";
 import { logActivity, sendNotification, checkAndUpdateProjectCompletion } from "./extra.service";
 
-export const createProject = async (projectData: any) => {
+export const createProject = async (projectData: any, creatorId: number) => {
   const { name, description, managerId, startDate, endDate, status } = projectData;
 
   // Verify that the manager exists and is either an ADMIN or a PROJECT_MANAGER
@@ -39,8 +39,14 @@ export const createProject = async (projectData: any) => {
     },
   });
 
-  await logActivity(`created Project "${name}"`, managerId, project.id);
-  await sendNotification(`You have been assigned as the manager for Project "${name}"`, managerId);
+  const actor = await prisma.user.findUnique({ where: { id: creatorId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
+  await logActivity(`created Project "${name}"`, creatorId, project.id);
+  
+  if (managerId !== creatorId) {
+    await sendNotification(`You have been assigned as the manager for Project "${name}" by ${actorText}`, managerId);
+  }
 
   return project;
 };
@@ -243,8 +249,9 @@ export const updateProject = async (id: number, userId: number, userRole: Role, 
   await logActivity(`updated Project "${updatedProject.name}"`, userId, id);
 
   if (status === "COMPLETED") {
-    // Notify all project members
+    // Notify all project members and the manager
     const members = await prisma.projectMember.findMany({ where: { projectId: id } });
+    await sendNotification(`Project "${updatedProject.name}" has been completed!`, updatedProject.managerId);
     for (const m of members) {
       await sendNotification(`Project "${updatedProject.name}" has been completed!`, m.userId);
     }
@@ -340,8 +347,11 @@ export const assignMember = async (projectId: number, userId: number, currentUse
     },
   });
 
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
   await logActivity(`assigned user ${member.user.name} to Project "${project.name}"`, currentUserId, projectId);
-  await sendNotification(`You have been assigned to Project "${project.name}"`, userId);
+  await sendNotification(`You have been assigned to Project "${project.name}" by ${actorText}`, userId);
 
   return member;
 };
@@ -387,8 +397,11 @@ export const removeMember = async (projectId: number, userId: number, currentUse
   const targetUser = await prisma.user.findUnique({ where: { id: userId } });
   const targetName = targetUser?.name || `User #${userId}`;
 
+  const actor = await prisma.user.findUnique({ where: { id: currentUserId } });
+  const actorText = actor ? `${actor.name} (${actor.role.replace("_", " ").toLowerCase()})` : "System";
+
   await logActivity(`removed user ${targetName} from Project "${project.name}"`, currentUserId, projectId);
-  await sendNotification(`You have been removed from Project "${project.name}"`, userId);
+  await sendNotification(`You have been removed from Project "${project.name}" by ${actorText}`, userId);
 
   return { message: "Member removed from project successfully" };
 };

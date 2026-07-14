@@ -15,9 +15,9 @@ export default function DashboardLayout({
 
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors">
+      <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 transition-colors">
         {/* Desktop Sidebar (Fixed Left) */}
-        <div className="hidden md:block w-64 flex-shrink-0">
+        <div className="hidden md:block w-64 flex-shrink-0 h-full">
           <Sidebar />
         </div>
 
@@ -37,9 +37,9 @@ export default function DashboardLayout({
         )}
 
         {/* Main Work Area */}
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex flex-col flex-1 min-w-0 h-full overflow-y-auto">
           <Navbar onMenuOpen={() => setMobileMenuOpen(true)} />
-          <main className="flex-1 px-4 py-8 md:px-8">
+          <main className="flex-1 px-4 py-8 md:px-8 relative z-0">
             {children}
           </main>
           <Footer />

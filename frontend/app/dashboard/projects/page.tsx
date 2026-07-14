@@ -105,18 +105,17 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Projects</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Projects</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Monitor current projects, track overall progress metrics, and allocate resources.
           </p>
         </div>
         {canCreate && (
           <Link
             href="/dashboard/projects/create"
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-500"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-[1.02]"
           >
             <Plus className="h-4 w-4" /> New Project
           </Link>
@@ -124,25 +123,26 @@ export default function ProjectsPage() {
       </div>
 
       {/* Filters & View Mode Selector */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+      <div className="relative z-10 flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl border border-border glass-card p-3">
+        <div className="relative w-full sm:max-w-xs group">
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
             type="text"
             placeholder="Search projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 bg-zinc-50 pl-10 pr-4 py-2 text-sm outline-none transition-all focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950 dark:focus:bg-zinc-950"
+            className="w-full rounded-xl border border-border bg-background/50 pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary focus:bg-background"
           />
         </div>
         
         <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-zinc-400" />
+          <div className="flex items-center gap-2 bg-background/50 border border-border rounded-xl px-2">
+            <Filter className="h-4 w-4 text-muted-foreground ml-2" />
             <SelectDropdown
               value={statusFilter}
               onChange={setStatusFilter}
-              className="w-full sm:w-40"
+              className="w-full sm:w-36"
+              buttonClassName="border-0 focus:ring-0 bg-transparent shadow-none dark:bg-transparent"
               options={[
                 { value: "ALL", label: "All Statuses" },
                 { value: "PLANNING", label: "Planning" },
@@ -153,23 +153,23 @@ export default function ProjectsPage() {
             />
           </div>
 
-          <div className="flex rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
+          <div className="flex rounded-xl bg-muted/50 p-1 border border-border/50">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-all ${
+              className={`p-2 rounded-lg transition-all ${
                 viewMode === "grid"
-                  ? "bg-white shadow-sm text-indigo-600 dark:bg-zinc-700 dark:text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  ? "bg-background shadow-sm text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               <Grid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md transition-all ${
+              className={`p-2 rounded-lg transition-all ${
                 viewMode === "list"
-                  ? "bg-white shadow-sm text-indigo-600 dark:bg-zinc-700 dark:text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  ? "bg-background shadow-sm text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               <List className="h-4 w-4" />
@@ -195,49 +195,54 @@ export default function ProjectsPage() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No projects found.</p>
         </div>
       ) : viewMode === "grid" ? (
-        /* GRID VIEW */
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => {
             const prog = project.completionPercentage || 0;
             return (
               <div
                 key={project.id}
-                className="flex flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm hover:shadow-md transition-all dark:border-zinc-800 dark:bg-zinc-900 group"
+                className="flex flex-col rounded-2xl border border-border glass-card p-6 group"
               >
                 <div className="flex items-start justify-between">
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate max-w-[200px]">
+                  <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate max-w-[200px]">
                     {project.name}
                   </h3>
-                  <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${getStatusColor(project.status)}`}>
+                  <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                    project.status === "ACTIVE"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : project.status === "PLANNING"
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  }`}>
                     {project.status}
                   </span>
                 </div>
 
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 h-10">
+                <p className="mt-3 text-sm text-muted-foreground line-clamp-2 h-10 leading-relaxed">
                   {project.description || "No description provided."}
                 </p>
 
                 {/* Progress Bar */}
                 <div className="mt-6">
-                  <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                  <div className="flex items-center justify-between text-xs font-medium text-muted-foreground mb-2">
                     <span>Progress</span>
-                    <span>{prog}%</span>
+                    <span className="text-primary">{prog}%</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-400 transition-all duration-1000 ease-out"
                       style={{ width: `${prog}%` }}
                     />
                   </div>
                 </div>
 
                 {/* Info Row */}
-                <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                  <div className="flex items-center gap-1">
+                <div className="mt-6 pt-5 border-t border-border flex items-center justify-between text-xs text-muted-foreground font-medium">
+                  <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
                     <Users className="h-3.5 w-3.5" />
-                    <span>{project.members.length} members</span>
+                    <span>{project.members.length}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>Due {formatDate(project.endDate)}</span>
                   </div>
@@ -245,7 +250,7 @@ export default function ProjectsPage() {
 
                 <Link
                   href={`/dashboard/projects/${project.id}`}
-                  className="mt-4 inline-flex w-full items-center justify-center gap-1 rounded-lg border border-zinc-200 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-all"
+                  className="mt-6 inline-flex w-full items-center justify-center gap-1 rounded-xl bg-muted/50 hover:bg-primary hover:text-primary-foreground py-2.5 text-sm font-medium transition-colors"
                 >
                   View Details <ChevronRight className="h-4 w-4" />
                 </Link>
@@ -255,57 +260,63 @@ export default function ProjectsPage() {
         </div>
       ) : (
         /* TABLE VIEW */
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 shadow-sm">
-          <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left">
-            <thead className="bg-zinc-50 dark:bg-zinc-950">
+        <div className="overflow-x-auto rounded-2xl border border-border glass-card">
+          <table className="min-w-full divide-y divide-border text-left">
+            <thead className="bg-muted/30">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project Name</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Manager</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Progress</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">End Date</th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-right">Action</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Name</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Manager</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Progress</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">End Date</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-border/50">
               {filteredProjects.map((project) => {
                 const prog = project.completionPercentage || 0;
                 return (
-                  <tr key={project.id} className="hover:bg-zinc-50/55 dark:hover:bg-zinc-800/40">
+                  <tr key={project.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-50">{project.name}</div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
+                      <div className="font-semibold text-foreground group-hover:text-primary transition-colors">{project.name}</div>
+                      <div className="text-xs text-muted-foreground truncate max-w-[200px] mt-1">
                         {project.description || "No description."}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-300">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-medium">
                       {project.manager?.name || "Unassigned"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${getStatusColor(project.status)}`}>
+                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        project.status === "ACTIVE"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : project.status === "PLANNING"
+                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      }`}>
                         {project.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 max-w-[120px]">
-                        <div className="h-1.5 w-20 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                      <div className="flex items-center gap-3 max-w-[120px]">
+                        <div className="h-2 w-20 rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-indigo-600 dark:bg-indigo-400"
+                            className="h-full rounded-full bg-gradient-to-r from-primary to-indigo-400 transition-all duration-500"
                             style={{ width: `${prog}%` }}
                           />
                         </div>
-                        <span className="text-xs font-bold">{prog}%</span>
+                        <span className="text-xs font-bold text-foreground">{prog}%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground font-medium">
                       {formatDate(project.endDate)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                       <Link
                         href={`/dashboard/projects/${project.id}`}
-                        className="inline-flex items-center gap-0.5 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 font-semibold"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground hover:bg-primary hover:text-primary-foreground font-medium transition-all"
                       >
-                        View <ChevronRight className="h-4 w-4" />
+                        View
                       </Link>
                     </td>
                   </tr>

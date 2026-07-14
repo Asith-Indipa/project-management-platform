@@ -5,6 +5,10 @@ import { generateToken } from '../utils/generateToken';
 export const registerUser = async (userData: any) => {
   const { name, email, password, role } = userData;
 
+  if (role === 'ADMIN') {
+    throw new Error('Public registration of System Administrator accounts is disabled for security reasons.');
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: { email }
   });
@@ -20,7 +24,7 @@ export const registerUser = async (userData: any) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'TEAM_MEMBER'
+      role: 'TEAM_MEMBER' // Always force TEAM_MEMBER on public registration
     }
   });
 
@@ -86,5 +90,53 @@ export const getUserById = async (userId: number) => {
   return {
     success: true,
     user,
+  };
+};
+
+export const updateUserProfile = async (userId: number, updateData: any) => {
+  const { name, email, password } = updateData;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const dataToUpdate: any = {};
+
+  if (name !== undefined) {
+    dataToUpdate.name = name;
+  }
+
+  if (email !== undefined && email !== user.email) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+    if (existingUser) {
+      throw new Error("Email address already in use");
+    }
+    dataToUpdate.email = email;
+  }
+
+  if (password && password.trim() !== "") {
+    dataToUpdate.password = await bcrypt.hash(password, 10);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: dataToUpdate,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+    }
+  });
+
+  return {
+    success: true,
+    user: updatedUser
   };
 };

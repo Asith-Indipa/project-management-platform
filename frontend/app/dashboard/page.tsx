@@ -122,52 +122,59 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50 tracking-tight">
-            Welcome back, {user?.name}!
+          <h1 className="text-3xl font-semibold text-foreground tracking-tight flex items-center gap-2">
+            Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-400">{user?.name}</span>
           </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Monitor activities, review logs, and update milestones.
+          <p className="mt-2 text-sm text-muted-foreground">
+            Monitor activities, review logs, and update milestones in real-time.
           </p>
         </div>
-        <span className={`inline-flex self-start sm:self-center items-center rounded-lg border px-3 py-1 text-xs font-bold ${getRoleBadgeColor(user?.role || "")}`}>
+        <span className="inline-flex self-start sm:self-center items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
           {user?.role?.replace("_", " ")}
         </span>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-3">
+      <div className="grid gap-4 xl:grid-cols-3">
         {/* LEFT COLUMN: CARDS & GRAPHS */}
-        <div className="xl:col-span-2 space-y-8">
+        <div className="xl:col-span-2 space-y-8 max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-hide">
           
           {/* STATS COUNTER BLOCKS */}
           {user?.role === "ADMIN" && stats && (
             <div className="grid gap-6 sm:grid-cols-3">
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Total Users</span>
-                  <Users className="h-6 w-6 text-indigo-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Total Users</span>
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalUsers}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalUsers}</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Total Projects</span>
-                  <Briefcase className="h-6 w-6 text-purple-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Total Projects</span>
+                  <div className="p-2 bg-purple-500/10 rounded-xl">
+                    <Briefcase className="h-5 w-5 text-purple-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalProjects}</p>
-                <p className="mt-1 text-xs text-green-600 dark:text-green-400 font-medium">
-                  {stats.activeProjects} active projects
-                </p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalProjects}</p>
+                <div className="mt-3 flex items-center gap-2 text-xs font-medium">
+                  <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-md">{stats.activeProjects} Active</span>
+                  <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md">{stats.completedProjects || 0} Done</span>
+                </div>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Total Tasks</span>
-                  <CheckSquare className="h-6 w-6 text-pink-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Total Tasks</span>
+                  <div className="p-2 bg-pink-500/10 rounded-xl">
+                    <CheckSquare className="h-5 w-5 text-pink-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalTasks}</p>
-                <p className="mt-1 text-xs text-zinc-550 dark:text-zinc-400">
-                  {stats.completedTasks} completed • {stats.pendingTasks} pending
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalTasks}</p>
+                <p className="mt-3 text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                  <span className="text-emerald-500">{stats.completedTasks} done</span> <span className="text-border">•</span> <span className="text-amber-500">{stats.pendingTasks} pending</span>
                 </p>
               </div>
             </div>
@@ -175,28 +182,34 @@ export default function DashboardPage() {
 
           {user?.role === "PROJECT_MANAGER" && stats && (
             <div className="grid gap-6 sm:grid-cols-3">
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Managed Projects</span>
-                  <Briefcase className="h-6 w-6 text-indigo-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Managed Projects</span>
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalProjects}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalProjects}</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Assigned Team Members</span>
-                  <Users className="h-6 w-6 text-purple-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Team Members</span>
+                  <div className="p-2 bg-purple-500/10 rounded-xl">
+                    <Users className="h-5 w-5 text-purple-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalTeamMembers}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalTeamMembers}</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Project Tasks</span>
-                  <CheckSquare className="h-6 w-6 text-pink-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Project Tasks</span>
+                  <div className="p-2 bg-pink-500/10 rounded-xl">
+                    <CheckSquare className="h-5 w-5 text-pink-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.totalTasks}</p>
-                <p className="mt-1 text-xs text-zinc-550 dark:text-zinc-400">
-                  {stats.completedTasks} completed • {stats.inProgressTasks} active
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.totalTasks}</p>
+                <p className="mt-3 text-xs text-muted-foreground flex items-center gap-2 font-medium">
+                  <span className="text-emerald-500">{stats.completedTasks} done</span> <span className="text-border">•</span> <span className="text-amber-500">{stats.inProgressTasks} active</span>
                 </p>
               </div>
             </div>
@@ -204,80 +217,93 @@ export default function DashboardPage() {
 
           {user?.role === "TEAM_MEMBER" && stats && (
             <div className="grid gap-6 sm:grid-cols-3">
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">My Tasks</span>
-                  <CheckSquare className="h-6 w-6 text-indigo-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">My Tasks</span>
+                  <div className="p-2 bg-primary/10 rounded-xl">
+                    <CheckSquare className="h-5 w-5 text-primary" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.assignedTasks}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.assignedTasks}</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Completed</span>
-                  <CheckCircle className="h-6 w-6 text-green-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Completed</span>
+                  <div className="p-2 bg-emerald-500/10 rounded-xl">
+                    <CheckCircle className="h-5 w-5 text-emerald-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.completedTasks}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.completedTasks}</p>
               </div>
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="glass-card rounded-2xl p-6 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Pending</span>
-                  <Clock className="h-6 w-6 text-amber-500" />
+                  <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Pending</span>
+                  <div className="p-2 bg-amber-500/10 rounded-xl">
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </div>
                 </div>
-                <p className="mt-4 text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{stats.pendingTasks}</p>
+                <p className="mt-6 text-4xl font-semibold tracking-tight text-foreground">{stats.pendingTasks}</p>
               </div>
             </div>
           )}
 
           {/* VISUAL CHARTS PANEL */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-2">Workspace Execution Overview</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6">Visual representation of task completion metrics.</p>
+          <div className="glass-card rounded-2xl p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-foreground mb-2 tracking-tight">Workspace Execution Overview</h2>
+            <p className="text-sm text-muted-foreground mb-8">Visual representation of task completion metrics across all active projects.</p>
 
-            <div className="grid gap-6 md:grid-cols-2 items-center">
+            <div className="grid gap-8 md:grid-cols-2 items-center">
               {/* Task Breakdown visual horizontal bars */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <div className="flex justify-between text-xs font-bold mb-1">
-                    <span>Task Completion rate</span>
-                    <span>{completionRate}%</span>
+                  <div className="flex justify-between text-sm font-medium mb-3">
+                    <span className="text-foreground">Task Completion Rate</span>
+                    <span className="text-primary font-semibold">{completionRate}%</span>
                   </div>
-                  <div className="h-3 w-full bg-zinc-100 rounded-full dark:bg-zinc-800 overflow-hidden">
-                    <div className="h-full bg-indigo-600 transition-all duration-500" style={{ width: `${completionRate}%` }} />
+                  <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-primary to-indigo-400 transition-all duration-1000 ease-out" style={{ width: `${completionRate}%` }} />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
-                  <div className="p-3 border border-zinc-150 rounded-lg dark:border-zinc-800 bg-zinc-50/20">
-                    <span className="block text-zinc-450">Completed Tasks</span>
-                    <span className="text-lg font-extrabold text-green-600 dark:text-green-400">{completed}</span>
+                <div className="grid grid-cols-2 gap-4 text-sm font-medium">
+                  <div className="p-4 rounded-xl border border-border bg-background shadow-sm hover:shadow-md transition-shadow">
+                    <span className="block text-muted-foreground mb-2">Completed Tasks</span>
+                    <span className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">{completed}</span>
                   </div>
-                  <div className="p-3 border border-zinc-150 rounded-lg dark:border-zinc-800 bg-zinc-50/20">
-                    <span className="block text-zinc-450">Pending / Active</span>
-                    <span className="text-lg font-extrabold text-amber-500">{pending}</span>
+                  <div className="p-4 rounded-xl border border-border bg-background shadow-sm hover:shadow-md transition-shadow">
+                    <span className="block text-muted-foreground mb-2">Pending / Active</span>
+                    <span className="text-2xl font-semibold text-amber-500">{pending}</span>
                   </div>
                 </div>
               </div>
 
               {/* SVG circular dial graph */}
               <div className="flex justify-center">
-                <div className="relative flex items-center justify-center">
+                <div className="relative flex items-center justify-center scale-110">
                   <svg className="w-40 h-40 transform -rotate-90">
-                    <circle cx="80" cy="80" r="65" strokeWidth="8" stroke="#f4f4f5" className="dark:stroke-zinc-800" fill="transparent" />
+                    <circle cx="80" cy="80" r="65" strokeWidth="12" stroke="currentColor" className="text-muted" fill="transparent" />
                     <circle
                       cx="80"
                       cy="80"
                       r="65"
-                      strokeWidth="8"
-                      stroke="#4f46e5"
+                      strokeWidth="12"
+                      stroke="url(#gradient)"
                       strokeDasharray={2 * Math.PI * 65}
                       strokeDashoffset={2 * Math.PI * 65 * (1 - completionRate / 100)}
                       strokeLinecap="round"
                       fill="transparent"
+                      className="transition-all duration-1000 ease-out"
                     />
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#4f46e5" />
+                        <stop offset="100%" stopColor="#818cf8" />
+                      </linearGradient>
+                    </defs>
                   </svg>
-                  <div className="absolute text-center">
-                    <span className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-50">{completionRate}%</span>
-                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Scope Completed</p>
+                  <div className="absolute text-center flex flex-col items-center">
+                    <span className="text-4xl font-semibold text-foreground tracking-tight">{completionRate}%</span>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mt-1">Completed</p>
                   </div>
                 </div>
               </div>
@@ -286,31 +312,31 @@ export default function DashboardPage() {
 
           {/* ROLE BASED DETAILED PROJECTS LIST FOR MANAGEMENT */}
           {user?.role === "PROJECT_MANAGER" && stats && (
-            <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 p-6">
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4">My Managed Projects</h2>
+            <div className="glass-card rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4 tracking-tight">My Managed Projects</h2>
               {stats.myProjects.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">You are not managing any projects yet.</p>
+                <p className="text-sm text-muted-foreground">You are not managing any projects yet.</p>
               ) : (
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                <div className="divide-y divide-border">
                   {stats.myProjects.map((project: any) => (
-                    <div key={project.id} className="flex items-center justify-between py-3">
+                    <div key={project.id} className="flex items-center justify-between py-4 group">
                       <div>
-                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{project.name}</h3>
-                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium mt-1 ${
+                        <h3 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{project.name}</h3>
+                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium mt-1.5 ${
                           project.status === "ACTIVE"
-                            ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                             : project.status === "PLANNING"
-                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
-                            : "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                         }`}>
                           {project.status}
                         </span>
                       </div>
                       <Link
                         href={`/dashboard/projects/${project.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-650 hover:underline"
+                        className="inline-flex items-center justify-center p-2 rounded-lg bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all"
                       >
-                        Manage <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       </Link>
                     </div>
                   ))}
@@ -320,37 +346,39 @@ export default function DashboardPage() {
           )}
 
           {user?.role === "TEAM_MEMBER" && stats && (
-            <div className="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900 p-6">
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-indigo-500" /> Upcoming Deadlines
+            <div className="glass-card rounded-2xl p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2 tracking-tight">
+                <Calendar className="h-5 w-5 text-primary" /> Upcoming Deadlines
               </h2>
               {stats.upcomingDeadlines.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">No upcoming pending deadlines! 🎉</p>
+                <p className="text-sm text-muted-foreground">No upcoming pending deadlines! 🎉</p>
               ) : (
                 <div className="space-y-4">
                   {stats.upcomingDeadlines.map((task: any) => {
                     const isHigh = task.priority === "HIGH";
                     return (
-                      <div key={task.id} className="rounded-lg border border-zinc-100 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+                      <div key={task.id} className="rounded-xl border border-border p-4 bg-background shadow-sm hover:shadow-md transition-shadow group">
                         <div className="flex items-start justify-between">
-                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 truncate max-w-[200px]">
+                          <h3 className="text-sm font-medium text-foreground truncate max-w-[200px] group-hover:text-primary transition-colors">
                             {task.title}
                           </h3>
-                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold ${
                             isHigh
-                              ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                              ? "bg-red-500/10 text-red-600 dark:text-red-400"
                               : task.priority === "MEDIUM"
-                              ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-                              : "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400"
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
                           }`}>
                             {task.priority}
                           </span>
                         </div>
-                        <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                          <span className="flex items-center gap-1 text-red-500 dark:text-red-400 font-medium">
-                            <AlertCircle className="h-3 w-3" /> Due {formatDate(task.dueDate)}
+                        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground font-medium">
+                          <span className="flex items-center gap-1.5 text-destructive dark:text-red-400">
+                            <AlertCircle className="h-3.5 w-3.5" /> Due {formatDate(task.dueDate)}
                           </span>
-                          <span className="capitalize">{task.status.toLowerCase().replace("_", " ")}</span>
+                          <span className="capitalize px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                            {task.status.toLowerCase().replace("_", " ")}
+                          </span>
                         </div>
                       </div>
                     );
@@ -363,26 +391,26 @@ export default function DashboardPage() {
         </div>
 
         {/* RIGHT COLUMN: SYSTEM ACTIVITY TIMELINE */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 mb-2 flex items-center gap-2">
-            <Activity className="h-5 w-5 text-indigo-500" /> Recent Activities
+        <div className="glass-card rounded-2xl p-6 h-fit max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-hide">
+          <h2 className="text-lg font-semibold text-foreground mb-2 flex items-center gap-2 tracking-tight">
+            <Activity className="h-5 w-5 text-primary" /> Recent Activities
           </h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-6">Real-time workflow audit log logs.</p>
+          <p className="text-sm text-muted-foreground mb-8">Real-time workflow audit log.</p>
 
-          <div className="relative border-l border-zinc-200 pl-4 dark:border-zinc-800 space-y-6">
+          <div className="relative border-l border-border pl-6 space-y-8">
             {activities.length === 0 ? (
-              <p className="text-xs text-zinc-400 pl-2">No activity logged yet.</p>
+              <p className="text-sm text-muted-foreground">No activity logged yet.</p>
             ) : (
               activities.map((act) => (
                 <div key={act.id} className="relative group">
                   {/* Bullet indicator on the line */}
-                  <span className="absolute -left-[21px] top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-indigo-600 border border-white dark:border-zinc-900 group-hover:scale-125 transition-transform" />
+                  <span className="absolute -left-[29px] top-1.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-primary ring-4 ring-background group-hover:scale-125 transition-transform" />
                   
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-zinc-850 dark:text-zinc-100">
-                      <span className="font-extrabold text-indigo-650">{act.user.name}</span> {act.description}
+                  <div className="space-y-1.5 bg-muted/40 hover:bg-muted/80 p-3 rounded-xl transition-colors border border-transparent hover:border-border">
+                    <p className="text-sm font-medium text-foreground">
+                      <span className="font-semibold text-primary">{act.user.name}</span> {act.description}
                     </p>
-                    <span className="block text-[10px] text-zinc-400">
+                    <span className="block text-xs text-muted-foreground font-medium">
                       {new Date(act.createdAt).toLocaleDateString()} at {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>

@@ -49,8 +49,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
       default:
         return [
           { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-          { name: "My Projects", href: "/dashboard/my-projects", icon: Briefcase },
-          { name: "My Tasks", href: "/dashboard/my-tasks", icon: CheckSquare },
+          { name: "My Projects", href: "/dashboard/projects", icon: Briefcase },
+          { name: "Tasks List", href: "/dashboard/tasks", icon: FileText },
+          { name: "Task Board", href: "/dashboard/my-tasks", icon: CheckSquare },
           { name: "Settings", href: "/dashboard/settings", icon: Settings },
         ];
     }
@@ -59,9 +60,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const links = getNavLinks();
 
   return (
-    <div className="flex h-full flex-col bg-white border-r border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 transition-colors">
-      <div className="flex h-16 items-center justify-between px-6 border-b border-zinc-100 dark:border-zinc-800">
-        <span className="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400">
+    <div className="flex h-full flex-col bg-sidebar border-r border-sidebar-border transition-colors">
+      <div className="flex h-16 items-center justify-between px-6 border-b border-sidebar-border">
+        <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-400 dark:to-indigo-300">
           WorkSync
         </span>
         {onClose && (
@@ -82,10 +83,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
               key={item.name}
               href={item.href}
               onClick={onClose}
-              className={`group flex items-center rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+              className={`group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400"
-                  : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                  ? "bg-primary/10 text-primary dark:bg-primary/15 dark:text-indigo-400 font-semibold shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />

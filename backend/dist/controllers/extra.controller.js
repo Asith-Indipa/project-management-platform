@@ -33,14 +33,16 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readNotification = exports.getNotifications = exports.getProjectActivities = exports.getActivities = void 0;
+exports.getUsers = exports.readNotification = exports.getNotifications = exports.getProjectActivities = exports.getActivities = void 0;
 const extraService = __importStar(require("../services/extra.service"));
 // ============================================================================
 // ACTIVITY TIMELINE
 // ============================================================================
 const getActivities = async (req, res) => {
     try {
-        const result = await extraService.getSystemActivities();
+        const userId = req.user.userId;
+        const role = req.user.role;
+        const result = await extraService.getSystemActivities(userId, role);
         res.status(200).json(result);
     }
     catch (error) {
@@ -69,7 +71,8 @@ exports.getProjectActivities = getProjectActivities;
 const getNotifications = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const result = await extraService.getMyNotifications(userId);
+        const role = req.user.role;
+        const result = await extraService.getMyNotifications(userId, role);
         res.status(200).json(result);
     }
     catch (error) {
@@ -80,12 +83,13 @@ exports.getNotifications = getNotifications;
 const readNotification = async (req, res) => {
     try {
         const userId = req.user.userId;
+        const role = req.user.role;
         const id = parseInt(req.params.id, 10);
         if (isNaN(id)) {
             res.status(400).json({ success: false, error: "Invalid notification ID" });
             return;
         }
-        const result = await extraService.markAsRead(id, userId);
+        const result = await extraService.markAsRead(id, userId, role);
         res.status(200).json({ success: true, notification: result });
     }
     catch (error) {
@@ -93,3 +97,13 @@ const readNotification = async (req, res) => {
     }
 };
 exports.readNotification = readNotification;
+const getUsers = async (req, res) => {
+    try {
+        const result = await extraService.getUsers();
+        res.status(200).json(result);
+    }
+    catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+exports.getUsers = getUsers;

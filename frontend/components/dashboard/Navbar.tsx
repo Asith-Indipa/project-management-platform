@@ -5,6 +5,7 @@ import { Menu, Bell, Sun, Moon } from "lucide-react";
 import Breadcrumb from "./Breadcrumb";
 import UserProfileDropdown from "./UserProfileDropdown";
 import api from "@/lib/api";
+import Link from "next/link";
 
 interface NavbarProps {
   onMenuOpen: () => void;
@@ -83,7 +84,7 @@ export default function Navbar({ onMenuOpen }: NavbarProps) {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-zinc-200 bg-white/80 px-4 md:px-8 shadow-sm backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/80 transition-colors">
+    <header className="sticky top-0 z-40 flex flex-shrink-0 h-16 w-full items-center justify-between border-b border-border bg-sidebar/90 px-4 md:px-8 shadow-sm backdrop-blur-xl dark:bg-sidebar/90 transition-colors">
       <div className="flex items-center gap-4">
         {/* Hamburger Menu button for Mobile only */}
         <button
@@ -103,29 +104,29 @@ export default function Navbar({ onMenuOpen }: NavbarProps) {
         {/* Dark Mode toggle */}
         <button
           onClick={toggleDarkMode}
-          className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 focus:outline-none dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors"
+          className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none transition-all duration-300"
           title="Toggle Theme"
         >
-          {darkMode ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-500" />}
+          {darkMode ? <Sun className="h-5 w-5 text-amber-500 hover:rotate-45 transition-transform duration-300" /> : <Moon className="h-5 w-5 text-indigo-500 hover:-rotate-12 transition-transform duration-300" />}
         </button>
 
         {/* Notification dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className="relative rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 focus:outline-none dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors"
+            className="relative rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none transition-all duration-300"
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-extrabold text-white animate-pulse">
+              <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-extrabold text-destructive-foreground animate-pulse shadow-sm">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {isNotifOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-zinc-200 bg-white py-2 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 z-50">
-              <div className="px-4 py-2 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+            <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-border glass-card py-2 shadow-xl z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="px-4 py-3 border-b border-border flex justify-between items-center">
                 <span className="font-bold text-sm text-zinc-800 dark:text-zinc-100">Notifications</span>
                 {unreadCount > 0 && (
                   <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold dark:bg-red-950/40 dark:text-red-400">
@@ -133,28 +134,39 @@ export default function Navbar({ onMenuOpen }: NavbarProps) {
                   </span>
                 )}
               </div>
-              <div className="max-h-64 overflow-y-auto divide-y divide-zinc-50 dark:divide-zinc-800">
+              <div className="max-h-64 overflow-y-auto divide-y divide-border">
                 {notifications.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-xs text-zinc-400">No notifications.</div>
+                  <div className="px-4 py-8 text-center text-sm text-muted-foreground">No notifications.</div>
                 ) : (
-                  notifications.map((notif) => (
+                  notifications.slice(0, 10).map((notif) => (
                     <div
                       key={notif.id}
                       onClick={() => !notif.isRead && handleMarkAsRead(notif.id)}
-                      className={`px-4 py-3 text-left text-xs transition-colors cursor-pointer ${
+                      className={`px-4 py-3 text-left text-sm transition-colors cursor-pointer ${
                         notif.isRead
-                          ? "text-zinc-550 dark:text-zinc-400 bg-white dark:bg-zinc-900"
-                          : "text-zinc-900 dark:text-zinc-100 bg-zinc-50/50 dark:bg-zinc-950/40 hover:bg-zinc-50 dark:hover:bg-zinc-950 font-semibold"
+                          ? "text-muted-foreground hover:bg-muted/50"
+                          : "text-foreground bg-primary/5 hover:bg-primary/10 font-medium"
                       }`}
                     >
-                      <p>{notif.message}</p>
-                      <span className="text-[10px] text-zinc-400 block mt-1">
+                      <p className="line-clamp-2 leading-relaxed">{notif.message}</p>
+                      <span className="text-xs text-muted-foreground block mt-2">
                         {new Date(notif.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   ))
                 )}
               </div>
+              {notifications.length > 0 && (
+                <div className="p-2 border-t border-border mt-1">
+                  <Link 
+                    href="/dashboard/notifications" 
+                    onClick={() => setIsNotifOpen(false)}
+                    className="block w-full text-center py-2 text-sm font-medium text-primary hover:text-indigo-700 hover:bg-primary/10 dark:hover:text-indigo-300 rounded-lg transition-colors"
+                  >
+                    See all notifications
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>

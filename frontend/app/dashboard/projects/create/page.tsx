@@ -33,6 +33,16 @@ export default function CreateProjectPage() {
   const [endDate, setEndDate] = useState("");
   const [managerId, setManagerId] = useState<string>("");
 
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = getLocalDateString();
+
   useEffect(() => {
     // Fetch managers list only if user is Admin (PM doesn't need to choose)
     const fetchManagers = async () => {
@@ -85,6 +95,8 @@ export default function CreateProjectPage() {
           return;
         }
         payload.managerId = parseInt(managerId, 10);
+      } else if (user) {
+        payload.managerId = user.id;
       }
 
       await api.post("/projects", payload);
@@ -108,71 +120,73 @@ export default function CreateProjectPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/projects"
-            className="inline-flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-200 bg-white text-zinc-500 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+            className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-border glass-card text-muted-foreground hover:text-foreground transition-colors shadow-sm hover:shadow-md"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">New Project</h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Initialize a new project, configure dates, and define members.</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">New Project</h1>
+            <p className="text-sm text-muted-foreground">Initialize a new project, configure dates, and define members.</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-sm font-medium text-red-700 dark:bg-red-950/20 dark:text-red-400">
+          <div className="rounded-xl bg-destructive/10 p-4 text-sm font-medium text-destructive border border-destructive/20 shadow-sm">
             {error}
           </div>
         )}
 
         {/* Card Form */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-2xl border border-border glass-card p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Project Name</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Project Name</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="E.g. Web App Redesign"
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50"
               />
-              {fieldErrors.name && <p className="mt-1 text-xs text-red-500">{fieldErrors.name[0]}</p>}
+              {fieldErrors.name && <p className="mt-1 text-xs text-destructive">{fieldErrors.name[0]}</p>}
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="E.g. Detailed redesign roadmap using nextjs and tailwind..."
                 rows={4}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50 resize-none"
               />
-              {fieldErrors.description && <p className="mt-1 text-xs text-red-500">{fieldErrors.description[0]}</p>}
+              {fieldErrors.description && <p className="mt-1 text-xs text-destructive">{fieldErrors.description[0]}</p>}
             </div>
 
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Start Date</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Start Date</label>
                 <input
                   type="date"
                   value={startDate}
+                  min={todayStr}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50"
                 />
-                {fieldErrors.startDate && <p className="mt-1 text-xs text-red-500">{fieldErrors.startDate[0]}</p>}
+                {fieldErrors.startDate && <p className="mt-1 text-xs text-destructive">{fieldErrors.startDate[0]}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">End Date</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">End Date</label>
                 <input
                   type="date"
                   value={endDate}
+                  min={startDate || todayStr}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 dark:border-zinc-800 dark:bg-zinc-950"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-primary/50"
                 />
-                {fieldErrors.endDate && <p className="mt-1 text-xs text-red-500">{fieldErrors.endDate[0]}</p>}
+                {fieldErrors.endDate && <p className="mt-1 text-xs text-destructive">{fieldErrors.endDate[0]}</p>}
               </div>
             </div>
 
@@ -193,8 +207,8 @@ export default function CreateProjectPage() {
                 <div>
                   {fetchingManagers ? (
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Project Manager</label>
-                      <div className="h-10 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-850"></div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Manager</label>
+                      <div className="h-10 w-full animate-pulse rounded-xl bg-muted"></div>
                     </div>
                   ) : (
                     <SelectDropdown
@@ -212,17 +226,17 @@ export default function CreateProjectPage() {
               )}
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+            <div className="flex justify-end gap-3 mt-6 border-t border-border/50 pt-6">
               <Link
                 href="/dashboard/projects"
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all disabled:opacity-50"
               >
                 {loading ? "Initializing..." : "Create Project"}
               </button>

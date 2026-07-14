@@ -75,6 +75,7 @@ const updateTaskProgress = async (id, userId, progress) => {
         },
     });
     await (0, extra_service_1.logActivity)(`calibrated Task "${task.title}" progress to ${progress}%`, userId, task.projectId);
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(task.projectId);
     return updatedTask;
 };
 exports.updateTaskProgress = updateTaskProgress;
@@ -109,6 +110,7 @@ const updateTaskStatus = async (id, userId, status) => {
         },
     });
     await (0, extra_service_1.logActivity)(`calibrated Task "${task.title}" status to ${status}`, userId, task.projectId);
+    await (0, extra_service_1.checkAndUpdateProjectCompletion)(task.projectId);
     return updatedTask;
 };
 exports.updateTaskStatus = updateTaskStatus;
