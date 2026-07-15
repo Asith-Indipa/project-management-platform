@@ -7,7 +7,7 @@ WorkSync is a comprehensive Project and Team Task Management Platform.It allows 
 ## 🚀 Live Demo & Links
 
 - **Live Website:** [WorkSync Live App](https://project-management-platform-pearl.vercel.app/dashboard)
-- **Video Walkthrough:** [/Drive Link Here)
+- **Video Walkthrough and Images:** [Google Drive Folder](https://drive.google.com/drive/folders/1JF7sWvkrHQOISTQw19V8aDtWHCiG61pJ?usp=sharing)
 - **API Documentation:** [API Docs](docs/API_DOCS.md)
 - **Postman Collection:** [Postman JSON](docs/WorkSync_Postman_Collection.json)
 - **System Diagrams:** [Diagrams](docs/DIAGRAMS.md)
